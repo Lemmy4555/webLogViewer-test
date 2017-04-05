@@ -6,7 +6,7 @@ Web App che permette la visualizzazione di file di log su un server remoto.
 Questa versione è stata scritta con lo scopo di provare le potenzialità di queste tecnologie lato client:
 
 * [IndexedDB](https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API)
-* [HTMLCustomElements v1](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements), [more here...](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements)
+* [HTMLCustomElements v1](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements), [more here...](https://developers.google.com/web/fundamentals/getting-started/primers/customelements)
 * [HTMLCustomElements v0](https://www.w3.org/TR/custom-elements/)
 * [Webpack](https://webpack.github.io/)
 
