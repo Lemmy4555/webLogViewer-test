@@ -22,8 +22,6 @@ Per generare tutti i pacchetti eseguire questo comando nella directory principal
 `mvn clean install`
 
 Se si desidera compilare il front-end singolarmente eseguire questi comandi sotto: /webLogViewer-war/src/main/webapp
-`npm install
-
+```npm install
 npm run build
-
-lite-server start`
+lite-server start```
