@@ -12,7 +12,7 @@ Questa versione è stata scritta con lo scopo di provare le potenzialità di que
 
 Lato back-end è stato sviluppato un servizio REST con JAX-RS, la lettura dei file su file system avviene tramite due versione customizzate di java.io.BufferedReader e org.apache.commons.io.input.ReversedLinesFileReader.
 
-I JUnit test sono eseguiti trami Arquillian su una versione Embedded del container di Glassfish 3.
+I JUnit test sono eseguiti tramite Arquillian su una versione embedded del container di Glassfish 3.
 
 ## Per iniziare
 
