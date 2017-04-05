@@ -14,7 +14,7 @@ Lato back-end è stato sviluppato un servizio REST con JAX-RS, la lettura dei fi
 
 I JUnit test sono eseguiti trami Arquillian su una versione Embedded del container di Glassfish 3.
 
-# Per iniziare
+## Per iniziare
 
 E possibile utilizzare l'applicazione sia sotto forma di EAR contenente sia il front-end che le API che sotto forma di due pacchetti separati, un war per le API e la parte front-end al di sotto di un HTTP Server esterno.
 
@@ -23,5 +23,7 @@ Per generare tutti i pacchetti eseguire questo comando nella directory principal
 
 Se si desidera compilare il front-end singolarmente eseguire questi comandi sotto: /webLogViewer-war/src/main/webapp
 `npm install
+
 npm run build
+
 lite-server start`
