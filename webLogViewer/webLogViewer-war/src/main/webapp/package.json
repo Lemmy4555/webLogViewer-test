@@ -1,0 +1,32 @@
+{
+  "name": "web-log-viewer",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "build": "webpack --config webpack.ext-server.dev.config.js",
+    "build:watch": "webpack --config webpack.ext-server.dev.config.js --watch",
+    "build:ext:dev": "webpack --config webpack.ext-server.dev.config.js",
+    "build:one:dev": "webpack --config webpack.one-server.dev.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.0",
+    "css-loader": "^0.27.3",
+    "file-loader": "^0.10.1",
+    "html-loader": "^0.4.5",
+    "lite-server": "^2.3.0",
+    "style-loader": "^0.15.0",
+    "url-loader": "^0.5.8",
+    "webpack": "^2.2.1"
+  },
+  "dependencies": {
+    "font-awesome": "^4.7.0",
+    "font-awesome-webpack2": "0.0.6",
+    "jquery": "^3.2.1",
+    "less": "^2.7.2"
+  }
+}

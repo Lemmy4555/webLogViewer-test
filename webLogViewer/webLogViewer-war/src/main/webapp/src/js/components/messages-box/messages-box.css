@@ -1,0 +1,25 @@
+[is="messages-box"]{
+  display: none;
+  padding: 0px;
+  pointer-events: none;
+}
+
+[is="messages-box"].visible{
+  display: table;
+}
+
+[is="messages-box"] .message{
+  text-align: center;
+  margin: auto;
+  background-color: #181818;
+  display: table;
+  padding: 20px 70px 20px 70px;
+  color: #fff;
+  box-shadow: 1px 1px 4px 2px #aeaeae;
+  pointer-events: auto;
+}
+
+[is="messages-box"] .message-container{
+  display: table-cell;
+  vertical-align: middle;
+}

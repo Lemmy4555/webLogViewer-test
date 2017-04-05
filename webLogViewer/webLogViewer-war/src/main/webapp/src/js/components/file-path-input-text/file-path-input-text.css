@@ -1,0 +1,27 @@
+[is=file-path-input-text] {
+  background-color: #bfe6ff;
+}
+
+[is=file-path-input-text] > input {
+  border-style: none;
+  padding: 10px;
+  width: 100%;
+  background-color: #e0f3ff;
+  transition: background-color 100ms;
+}
+
+[is=file-path-input-text] > input:hover {
+  background-color: #fcfeff;
+  transition: background-color 100ms;
+}
+
+[is=file-path-input-text] > input:focus {
+  background-color: #fcfeff;
+  transition: background-color 100ms;
+}
+
+[is=file-path-input-text] > span {
+  color: #ff0606;
+  display: block;
+  padding: 5px;
+}

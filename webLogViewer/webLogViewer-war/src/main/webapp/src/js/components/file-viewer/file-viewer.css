@@ -1,0 +1,34 @@
+:root {
+  --message-box-height: 100%;
+}
+
+[is="file-viewer"] > .message-wrapper > [is="messages-box"] {
+  position: relative;
+  height: var(--message-box-height);
+  width: 100%;
+}
+
+[is="file-viewer"] > .message-wrapper {
+  position: relative;
+  height: var(--message-box-height);
+  top: calc(-1 * var(--message-box-height));
+  width: 100%;
+  pointer-events: none;
+}
+
+[is="file-viewer"] > .content-wrapper {
+  position: relative;
+  overflow-y: auto;
+  width: var(--message-box-height);
+  height: 100%;
+}
+
+[is=file-viewer] {
+	height: 100%;
+	width: 100%;
+}
+
+[is=file-viewer] > code {
+	display: block;
+	word-wrap: break-word;
+}

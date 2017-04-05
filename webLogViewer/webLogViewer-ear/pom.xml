@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>com.sc.l45.weblogviewer</groupId>
+    <artifactId>webLogViewer</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>webLogViewer-ear</artifactId>
+  <packaging>ear</packaging>
+  <name>webLogViewer-ear</name>
+  
+  <dependencies>
+    <dependency>
+      <groupId>com.sc.l45.weblogviewer</groupId>
+      <artifactId>webLogViewer-api</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>com.sc.l45.weblogviewer</groupId>
+      <artifactId>webLogViewer-war</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <type>war</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-ear-plugin</artifactId>
+        <configuration>
+	         <defaultLibBundleDir>lib</defaultLibBundleDir>
+	         <modules>
+               <webModule>
+                 <groupId>com.sc.l45.weblogviewer</groupId>
+                 <artifactId>webLogViewer-war</artifactId>
+                 <contextRoot>/webLogViewer</contextRoot>
+               </webModule>
+               <webModule>
+                 <groupId>com.sc.l45.weblogviewer</groupId>
+                 <artifactId>webLogViewer-api</artifactId>
+                 <contextRoot>/webLogViewer-api</contextRoot>
+               </webModule>
+            </modules>
+	      </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>

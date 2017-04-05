@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>com.sc.l45.weblogviewer</groupId>
+  <artifactId>webLogViewer</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+  </properties>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.xtphere</groupId>
+        <artifactId>webLogViewer-api</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>com.xtphere</groupId>
+        <artifactId>webLogViewer-war</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <modules>
+  	<module>webLogViewer-ear</module>
+    <module>webLogViewer-war</module>
+    <module>webLogViewer-api</module>
+  </modules>
+</project>

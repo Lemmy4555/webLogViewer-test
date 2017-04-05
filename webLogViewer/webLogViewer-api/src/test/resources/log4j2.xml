@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1}] - %msg%n%throwable}"/>
+    </Console>
+    <Console name="Console-perf" target="SYSTEM_OUT">
+      <PatternLayout pattern="%style{%d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1}][%C{1}.%M] - %msg%n}{white}"/>
+    </Console>
+    <Console name="Console-api-calls" target="SYSTEM_OUT">
+      <PatternLayout pattern="%style{%d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1}] - %msg%n}{magenta}"/>
+    </Console>
+    <Console name="Console-junit-tests" target="SYSTEM_OUT">
+      <PatternLayout pattern="%style{%d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1}] - %msg%n}{bright,magenta}"/>
+    </Console>
+  </Appenders>
+	
+	<Loggers>
+		<Logger name="com.sc.l45" level="trace">
+	  </Logger>
+	  
+	  <Logger name="performance" level="trace" additivity="false">
+	    <AppenderRef ref="Console-perf" />
+	  </Logger>
+	  
+	  <Logger name="api-calls" level="trace" additivity="false">
+      <AppenderRef ref="Console-api-calls" />
+    </Logger>
+    
+    <Logger name="junit-tests" level="trace" additivity="false">
+      <AppenderRef ref="Console-junit-tests" />
+    </Logger>
+	  
+    <Root level="warn">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+
+</Configuration>
