@@ -37,8 +37,6 @@ class FolderExplorer extends HTMLDivElement {
     /** Indica se il tasto per la cartella superiore e abilitato */
     var isFolderUpEnabled = true;
 
-    
-
     homeButton.on("click", function() {
       onFolderExplorerHomeClick();
     });
