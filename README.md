@@ -10,7 +10,7 @@ Questa versione è stata scritta con lo scopo di provare le potenzialità di que
 * [HTMLCustomElements v0](https://www.w3.org/TR/custom-elements/)
 * [Webpack](https://webpack.github.io/)
 
-Lato back-end è stato sviluppato un servizio REST con JAX-RS, la lettura dei file su file system avviene tramite due versione customizzate di java.io.BufferedReader e org.apache.commons.io.input.ReversedLinesFileReader.
+Lato back-end è stato sviluppato un servizio REST con JAX-RS, la lettura dei file su file system avviene tramite le versioni customizzate di java.io.BufferedReader e org.apache.commons.io.input.ReversedLinesFileReader.
 
 I JUnit test sono eseguiti tramite Arquillian su una versione embedded del container di Glassfish 3.
 
