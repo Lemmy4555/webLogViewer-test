@@ -26,9 +26,6 @@ export class DbService {
   }
 
   public getFile = function (filePath: string) {
-    if(!Constants.USE_CACHE_DB) {
-      filePath = Constants.UNVALID_PATH;
-    }
     this.logger.debug("Tentativo di lettura del file: %s", filePath);
     return this.db.transaction([DbFilesConstants.tableName]).objectStore(DbFilesConstants.tableName).get(filePath);
   };
@@ -53,8 +50,7 @@ export class DbService {
     }
 
     if (!Constants.USE_CACHE_DB) {
-        this.logger.warn("USE_CACHE_DB e false, il db verra utilizzato per recuperare i file salvati, per qualsiasi chiamata di get" +
-          " il path di input verra settato a: " + Constants.UNVALID_PATH);
+      this.logger.warn("USE_CACHE_DB e false, il db verra ripulito");
     }
     //Tentativo di connessione al DB
     var request = window.indexedDB.open(this.dbName);
@@ -63,13 +59,18 @@ export class DbService {
     };
     request.onsuccess = (event: any) => {
       this.db = event.target.result;
+      if (!Constants.USE_CACHE_DB) {
+        this.db.transaction([DbFilesConstants.tableName], "readwrite")
+          .objectStore(DbFilesConstants.tableName).clear();
+        this.logger.warn("Il db e stato pulito");
+      }
       callback();
       return;
     };
     request.onupgradeneeded = (event: any) => {
       //Se il db non esiste o non e aggiornato, viene rigenerato.
       this.db = event.target.result;
-      var objectStore = this.db.createObjectStore(DbFilesConstants.tableName, { keyPath: DbFilesConstants.pk });
+      let objectStore = this.db.createObjectStore(DbFilesConstants.tableName, { keyPath: DbFilesConstants.pk });
       objectStore.createIndex(DbFilesConstants.pk, DbFilesConstants.pk, { unique: true });
     };
   }

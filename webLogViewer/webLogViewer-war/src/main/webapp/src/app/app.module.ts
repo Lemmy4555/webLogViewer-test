@@ -16,6 +16,7 @@ import { DbService } from 'Services/db/db.service';
 import { PopUpErrorLogElement } from './components/pop-up-error-log/element/pop-up-error-element.component';
 
 import '../styles/styles.scss';
+import { FilePathViewer } from './components/file-path-viewer/file-path-viewer.component';
 
 @NgModule({
   imports: [
@@ -33,7 +34,8 @@ import '../styles/styles.scss';
     FolderExplorerElement,
     PopUpErrorLog,
     FileViewer,
-    PopUpErrorLogElement
+    PopUpErrorLogElement,
+    FilePathViewer
   ],
   providers: [
     ApiService,

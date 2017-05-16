@@ -11,6 +11,9 @@ import { FileListDataResponse } from './response/file-list-data-response';
 import { FileCompleteJson } from 'Models/file-complete.json';
 import { FileJson } from 'Models/file.json';
 import { GenericResponse } from './response/generic-response-json';
+import { FileComplete } from 'Models/file-complete.model';
+import { File } from 'Models/file.model';
+import { Converter } from './converter';
 
 @Injectable()
 export class ApiService {
@@ -59,52 +62,52 @@ export class ApiService {
   }
 
   public getTailText(filePath: string, rowsFromEnd: number,
-    isLengthToGet: boolean = false): Observable<FileCompleteJson> {
+    isLengthToGet: boolean = false): Observable<FileComplete> {
     let params: URLSearchParams = new URLSearchParams();
     params.set("filePath", filePath);
     params.set("rowsFromEnd", rowsFromEnd.toString());
     params.set("getLength", isLengthToGet.toString());
     return this.http.get(Constants.API_HOME + "getTailText",
       this.options(params)
-    ).map((res: Response) => res.json())
+    ).map((res: Response) => Converter.toFileComplete(res.json(), filePath))
       .catch((error: GenericResponse) => {
         return Observable.throw(error)
       });
   }
 
   public getTextFromLine(filePath: string, lineFrom: number)
-    : Observable<FileJson> {
+    : Observable<File> {
     let params: URLSearchParams = new URLSearchParams();
     params.set("filePath", filePath);
     params.set("lineFrom", lineFrom.toString());
     return this.http.get(Constants.API_HOME + "getTextFromLine",
       this.options(params)
-    ).map((res: Response) => res.json())
+    ).map((res: Response) => Converter.toFile(res.json(), filePath))
       .catch((error: GenericResponse) => {
         return Observable.throw(error)
       });
   }
 
   public getTextFromPointer(filePath: string, pointer: number,
-    isTotRowsToGet: boolean = false): Observable<FileCompleteJson> {
+    isTotRowsToGet: boolean = false): Observable<FileComplete> {
     let params: URLSearchParams = new URLSearchParams();
     params.set("filePath", filePath);
     params.set("pointer", pointer.toString());
     params.set("isTotRowsToGet", isTotRowsToGet.toString());
     return this.http.get(Constants.API_HOME + "getTextFromPointer",
       this.options(params)
-    ).map((res: Response) => res.json())
+    ).map((res: Response) => Converter.toFileComplete(res.json(), filePath))
       .catch((error: GenericResponse) => {
         return Observable.throw(error)
       });
   }
 
-  public getFullFile(filePath: string): Observable<FileCompleteJson> {
+  public getFullFile(filePath: string): Observable<FileComplete> {
     let params: URLSearchParams = new URLSearchParams();
     params.set("filePath", filePath);
     return this.http.get(Constants.API_HOME + "getFullFile",
       this.options(params)
-    ).map((res: Response) => res.json())
+    ).map((res: Response) => Converter.toFileComplete(res.json(), filePath))
       .catch((error: GenericResponse) => {
         return Observable.throw(error)
       });

@@ -179,7 +179,7 @@ export class FileViewerHandler {
             this.apiService.getFileData(filePathInner).subscribe((result: FileDataReponse) => {
               if (result.isFile) {
                 this.apiService.getTailText(filePathInner, this.NEW_FILE_LINES_TO_READ)
-                  .subscribe((result: FileCompleteJson) => {
+                  .subscribe((result: FileComplete) => {
                     //Tail del file non ancora presente su DB
                     var fileToInsert = new File(filePathInner, result.readContent, result.rowsRead, result.size, result.encoding);
                     this.handleNewFileOpening(fileToInsert);
@@ -234,20 +234,21 @@ export class FileViewerHandler {
    * @param {WlvFile} fileToInsert 
    */
   private handleNewFileOpening(fileToInsert: File) {
-    var path = fileToInsert.path;
     //Ottengo tutto il file
     this.fullFileApiCall = this.apiService.getFullFile(fileToInsert.path).subscribe((response: FileComplete) => {
-      var fileToSync = new FileComplete(fileToInsert.path, response.readContent, response.rowsRead, response.size, response.encoding, response.rowsInFile);
-      var currentJobFileSize = this.tailFileJob.file.size;
+      let fileToSync = new FileComplete(fileToInsert.path, response.readContent, response.rowsRead, response.size, response.encoding, response.rowsInFile);
+      var currentJobFileSize;
       //La prima volta che il job avra terminato di effettuare un'elaborazione currentJobFileSize avra il valore
       this.tailFileJob.onFileTailed(() => {
+        currentJobFileSize = this.tailFileJob.file.size;
         this.syncronizeFileWithCache(fileToSync, currentJobFileSize);
       });
       this.tailFileJob.onFileUnchanged(() => {
+        currentJobFileSize = this.tailFileJob.file.size;
         this.syncronizeFileWithCache(fileToSync, currentJobFileSize);
       });
     }, (error: GenericResponse) => {
-      var errorMsg = "Non e stato possibile inserire in cache il file, errore durante il download: ("
+      let errorMsg = "Non e stato possibile inserire in cache il file, errore durante il download: ("
         + error.errorCode + ") " + error.responseText;
       this.logger.error(errorMsg);
       this._onUnhandledError(errorMsg);
@@ -260,31 +261,23 @@ export class FileViewerHandler {
     this.tailFileJob.onFileUnchanged(null);
     this.tailFileJob.onFileTailed(null);
     var path = fileToSync.path;
-    var manualUnsynchedFileReadRequest: Observable<FileCompleteJson | FileComplete>;
-    var manualTosynchFileReadRequest: Observable<FileCompleteJson | FileComplete>;
-    this.logger.info("Sincronizzazione con la cache su DB del file %s", path)
+    var manualUnsynchedFileReadRequest: Observable<FileComplete>;
+    var manualTosynchFileReadRequest: Observable<FileComplete>;
+    this.logger.info("Sincronizzazione con la cache su DB del file %s", path);
 
     manualUnsynchedFileReadRequest = this.apiService.getTextFromPointer(path, currentJobFileSize, true);
     //Effettuo la chiamata di tail sul file da cachare perche mi servira per la sincronizzazione con quello a video
     manualTosynchFileReadRequest = this.apiService.getTextFromPointer(path, fileToSync.size)
 
     manualUnsynchedFileReadRequest = Observable.zip(manualUnsynchedFileReadRequest,
-      (response: FileCompleteJson) => {
-        var fileReadManually = new FileComplete(response.path,
-          response.readContent, response.rowsRead,
-          response.size, response.encoding,
-          response.rowsInFile);
-        this.useFileWriterJob(fileReadManually);
-
-        return fileReadManually;
+      (response: FileComplete) => {
+        this.useFileWriterJob(response);
+        return response;
       });
 
     manualTosynchFileReadRequest = Observable.zip(manualTosynchFileReadRequest,
-      (response: FileCompleteJson) => {
-        var fileRead = new FileComplete(path, response.readContent,
-          response.rowsRead, response.size, response.encoding,
-          response.rowsInFile);
-        return fileRead;
+      (response: FileComplete) => {
+        return response;
       });
 
     Observable.zip(manualUnsynchedFileReadRequest, manualTosynchFileReadRequest,
@@ -305,7 +298,7 @@ export class FileViewerHandler {
           syncFileResponse.size, syncFileResponse.encoding,
           fileToSync.rowsInFile + syncFileResponse.rowsRead);
         //Cacho il file completo
-        this.dbHelper.addFile(fileSync);
+        this.dbHelper.addFile(fileSync.json());
         this.tailFileJob.onFileTailed((file) => {
           this.handleSincronizedTailedFile(file);
         });
@@ -332,9 +325,9 @@ export class FileViewerHandler {
       maxRowsInFile = unsyncRowsInFile;
       maxSize = unsyncFileRensponse.size;
     } else {
-      minRowsInFile = fileSync.rowsInFile - unsyncRowsInFile;
+      minRowsInFile = fileSync.rowsInFile;
       maxRowsInFile = fileSync.rowsInFile;
-      maxSize = syncFileResponse.size;
+      maxSize = fileSync.size;
     }
     //Confronto il file con tutto il contenuto con quello a video per ottenere il contenuto non ancora visulizzato in output
     let fileGap = new File(fileSync.path,

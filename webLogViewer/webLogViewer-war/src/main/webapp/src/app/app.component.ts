@@ -10,7 +10,7 @@ import { DbService } from 'Services/db/db.service';
 import { FileViewer } from 'Components/file-viewer/file-viewer.component';
 import { CacheHelper } from 'Helpers/cache.helper';
 import { Logger } from 'Logger/logger';
-import { FileViewerHandlerTest } from 'Handlers/file-viewer.handler-test';
+import { FilePathViewer } from 'Components/file-path-viewer/file-path-viewer.component';
 
 @Component({
   selector: "web-log-viewer",
@@ -28,12 +28,14 @@ export class AppComponent implements OnInit {
   private popUpErrorLog: PopUpErrorLog;
   @ViewChild(FileViewer)
   private fileViewer: FileViewer;
+  @ViewChild(FilePathViewer)
+  private filePathViewer: FilePathViewer;
 
   private apiService: ApiService;
   private dbService: DbService;
 
   private folderExplorerHandler: FolderExplorerHandler;
-  private fileViewerHandler: FileViewerHandlerTest;
+  private fileViewerHandler: FileViewerHandler;
 
   constructor(apiService: ApiService, dbService: DbService) {
     this.apiService = apiService;
@@ -43,7 +45,7 @@ export class AppComponent implements OnInit {
   public ngOnInit() {
     this.logger.debug("Initializing app");
     this.folderExplorerHandler = new FolderExplorerHandler(this.folderExplorer, this.apiService);
-    this.fileViewerHandler = new FileViewerHandlerTest(this.fileViewer, this.apiService, this.dbService);
+    this.fileViewerHandler = new FileViewerHandler(this.fileViewer, this.apiService, this.dbService);
 
     this.fileViewerHandler
       .onOpenNewFileError((message: string) => {
@@ -58,9 +60,10 @@ export class AppComponent implements OnInit {
         this.folderExplorer.showMessage(message);
       })
       .onOpenFile((fileName: string) => this.fileViewerHandler.openNewFile(fileName))
-    // .onOpenFolder(this.filePathViewer.update);
+      .onOpenFolder((path: Array<string>) => {this.filePathViewer.path = path});
 
     this.filePathInputText.onPathInsert((path: string) => this.folderExplorerHandler.navigateTo(path));
+    this.filePathViewer.onFolderSelected((path: string) => this.folderExplorerHandler.navigateTo(path));
 
     //Recupera dal DB l'ultimo file aperto.
     this.dbService.connect(() => {
@@ -69,6 +72,12 @@ export class AppComponent implements OnInit {
       } else {
         this.logger.warn("Non c'e nessun file in cache");
         this.fileViewer.showMessage("Selezionare un file da leggere");
+      }
+
+      if(CacheHelper.getLastOpenedFolder()) {
+        this.folderExplorerHandler.navigateTo(CacheHelper.getLastOpenedFolder());
+      } else {
+        this.folderExplorerHandler.navigateToHomeDir();
       }
     });
     this.logger.debug("App initialized");

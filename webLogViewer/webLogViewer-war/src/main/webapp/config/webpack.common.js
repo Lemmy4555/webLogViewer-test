@@ -3,6 +3,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var helpers = require('./helpers');
 var path = require("path");
+var jsonImporter = require("node-sass-json-importer");
 
 module.exports = {
   entry: {
@@ -65,16 +66,42 @@ module.exports = {
       {
         test: /\.css$/,
         include: helpers.root('src', 'app'),
-        loader: 'raw-loader'
+        use: ['raw-loader']
       },
       {
         test: /\.scss$/,
-        use: ['to-string-loader', 'css-loader', 'sass-loader'],
+        use: [
+          'to-string-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1
+            },
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              importer: jsonImporter,
+            },
+          }],
         exclude: [helpers.root('src', 'styles')]
       },
       {
         test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1
+            },
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              importer: jsonImporter,
+            },
+          }],
         include: [helpers.root('src', 'styles')]
       }
     ]

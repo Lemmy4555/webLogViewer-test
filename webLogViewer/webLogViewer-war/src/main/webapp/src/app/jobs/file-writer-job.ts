@@ -16,7 +16,7 @@ export class FileViewerWriterJob {
   /** intervall di tempo tra una scrittura di un chunk ed un'altra */
   private readonly SLEEP_TIME: number = 1000; //ms -> 1 secondo
   /** dimensione massima del chunk della stringa da scrivere sul viewer */
-  private readonly MAX_CHUNK_SIZE: number = 200; //righe
+  private readonly MAX_CHUNK_SIZE: number = 2000; //righe
 
   private fileViewer: FileViewer;
 
@@ -101,6 +101,10 @@ export class FileViewerWriterJob {
   }
 
   private jobImpl() {
+    if(this.queue.length < 1) {
+      this.logger.debug("Non sono stati inseriti elementi da elaborare");
+      this.terminateJob();
+    } 
     let chunk = this.queue[this.counter];
     this.fileViewer.writeText(chunk);
     this.counter++;

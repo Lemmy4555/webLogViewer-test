@@ -26,11 +26,13 @@ export class File implements FileJson, ToJson<FileJson> {
   }
 
   public json(): FileJson {
-    return <FileJson>this;
+    return <FileJson> this;
   }
 
-  public static buildFromJson(json: FileJson) {
+  public static buildFromJson(json: any): File {
+    json.rowsRead = json.rowsRead == null ? 0 : json.rowsRead;
+    json.size = json.size == null ? 0 : json.size;
     return new File(json.path, json.readContent,
-      json.rowsRead, json.size, json.encoding);
+      parseInt(json.rowsRead), parseInt(json.size), json.encoding);
   }
 }

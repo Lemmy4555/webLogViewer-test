@@ -62,29 +62,41 @@ export class CommonUtils {
     * @return false se l'errore che si e verificato contiene una risposta da parte delle API,
     *         altrimenti torna il messaggio in input alimentato con le informazioni sull'errore
     */
-    static ajaxUnreacheableErrorLogHandling(message: string, error: GenericResponse): ErrorMessage {
-      var htmlMessage: string = message;
-      var stdMessage: string = message;
-      if(error.responseText) {
-        return null;
+  static ajaxUnreacheableErrorLogHandling(message: string, error: GenericResponse): ErrorMessage {
+    var htmlMessage: string = message;
+    var stdMessage: string = message;
+    if (error.responseText) {
+      return null;
+    } else {
+      var errorMessage = null;
+      if (error.status != 0) {
+        errorMessage = "Errore (" + error.status + ") " + error.statusText;
       } else {
-        var errorMessage = null;
-        if(error.status != 0) {
-          errorMessage = "Errore (" + error.status + ") " + error.statusText;
-        } else {
-          errorMessage = "Errore (" + error.status + ") Non e stato possibile raggiungere le API";
-        }
-        stdMessage += ". " + errorMessage;
-        htmlMessage += ".<br><br>" + errorMessage;
-        return new ErrorMessageModel(stdMessage, htmlMessage);
+        errorMessage = "Errore (" + error.status + ") Non e stato possibile raggiungere le API";
       }
+      stdMessage += ". " + errorMessage;
+      htmlMessage += ".<br><br>" + errorMessage;
+      return new ErrorMessageModel(stdMessage, htmlMessage);
     }
+  }
 
-    static isAjaxUnreacheableError(error: GenericResponse): boolean {
-      if(error.responseText) {
-        return false;
-      } else {
-        return true;
-      }
+  static isAjaxUnreacheableError(error: GenericResponse): boolean {
+    if (error.responseText) {
+      return false;
+    } else {
+      return true;
     }
+  }
+
+  static fromUnixPathToArray(path: string): Array<string> {
+    return path.split("/").filter(pathPart => pathPart);
+  }
+
+  static fromArrayToUnixPath(path: Array<string>): string {
+    let result: string = "";
+    path.forEach((pathPart) => {
+      result += pathPart + "/";
+    });
+    return result;
+  }
 }

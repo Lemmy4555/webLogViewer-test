@@ -11,6 +11,7 @@ import { FileDataReponse } from 'Services/api/response/file-data-response';
 import { ErrorMessage } from 'Util/error-mgmt/error-message';
 import { ErrorMessageModel } from 'Util/error-mgmt/error-message.model';
 import { GenericResponse } from 'Services/api/response/generic-response-json';
+import { CacheHelper } from 'Helpers/cache.helper';
 
 /**
  * Handler che si occupa di gestire il FolderExplorer: tiene traccia della cartella di default, della cartella
@@ -31,7 +32,7 @@ export class FolderExplorerHandler {
   /** callback richiamata nel momento in cui viene aperto un file e non una cartella */
   private _onOpenFile: (path: string) => void = (path: string) => { };
   /** callback richiamata nel momento in cui viene aperto una cartella */
-  private _onOpenFolder: (path: string) => void = (path: string) => { };
+  private _onOpenFolder: (path: Array<string>) => void = (path: Array<string>) => { };
   /** Callback richiamata quando si veriffica un errore nella chiamata alle API */
   private _onApiCallError: (message: string) => void = (message: string) => { };
 
@@ -75,11 +76,6 @@ export class FolderExplorerHandler {
     folderExplorer.onFolderExplorerHomeClick(() => {
       this.getAndGoToHomeDir();
     });
-
-    /*
-     * Chiama le API per ottenere la directory di default e la imposta come cartella corrente
-     */
-    this.getAndGoToHomeDir();
   }
 
   private onFolderExplorerElementClick(fileName: string, isFile: boolean) {
@@ -137,9 +133,13 @@ export class FolderExplorerHandler {
 
   public navigateToHomeDir() {
     this.logger.debug("Navigazione alla default dir");
-    this.folderExplorer.hideLoader();
-    this.navigateTo(this.DEFAULT_FOLDER);
     this.folderExplorer.closeMessage();
+    if(this.DEFAULT_FOLDER === "") {
+      this.getAndGoToHomeDir();
+    } else {
+      this.navigateTo(this.DEFAULT_FOLDER);
+    }
+    this.folderExplorer.hideLoader();
   }
 
   /**
@@ -148,7 +148,7 @@ export class FolderExplorerHandler {
   private updateFolderExplorer(path: string, fileList: FoldersToView) {
     this.setCurrentFolder(path);
     this.folderExplorer.updateView(fileList);
-    this._onOpenFolder(path);
+    this._onOpenFolder(CommonUtils.fromUnixPathToArray(this.currentFolder));
   }
 
   /**
@@ -160,7 +160,7 @@ export class FolderExplorerHandler {
    * @param {string} path path in cui si vuole navigare, prima di ogni cosa il path 
    *                      viene sempre convertito in formato UNIX
    */
-  public navigateTo(path: string) {
+  public navigateTo(path: string): void {
     this.folderExplorer.showLoader();
     path = CommonUtils.unixPath(path);
     this.apiService.getFileData(path)
@@ -191,7 +191,7 @@ export class FolderExplorerHandler {
   /**
    * Imposta la callback chiamata quando si apre un elemento di tipo File
    */
-  public onOpenFile = function (callback: (path: string) => void) {
+  public onOpenFile = function (callback: (path: string) => void): FolderExplorerHandler {
     this._onOpenFile = callback;
     return this;
   }
@@ -199,12 +199,12 @@ export class FolderExplorerHandler {
   /**
    * Imposta la callback chiamata quando si apre un elemento di tipo File
    */
-  public onOpenFolder = function (callback: (path: string) => void) {
+  public onOpenFolder = function (callback: (path: Array<string>) => void): FolderExplorerHandler {
     this._onOpenFolder = callback;
     return this;
   }
 
-  private openFolder(path: string) {
+  private openFolder(path: string): void {
     this.logger.debug("Apertura cartella %s", path);
     this.folderExplorer.showLoader();
     this.apiService.getFileList(path)
@@ -218,6 +218,7 @@ export class FolderExplorerHandler {
         } else {
           this.folderExplorer.enableFolderUp();
         }
+        CacheHelper.setLastOpenedFolder(path);
       }, error => {
         if (CommonUtils.isAjaxUnreacheableError(error)) {
           let message: ErrorMessage = CommonUtils.ajaxUnreacheableErrorLogHandling(
