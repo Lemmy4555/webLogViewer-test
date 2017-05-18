@@ -20,6 +20,7 @@ import com.sc.l45.weblogviewer.api.responses.DefaultDirResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
+import com.sc.l45.weblogviewer.api.responses.utils.FileContentResponseUtils;
 import com.sc.l45.weblogviewer.api.utils.Timer;
 import com.sc.l45.weblogviewer.test.config.ApiTestConf;
 import com.sc.l45.weblogviewer.test.config.TestConf;
@@ -191,7 +192,7 @@ public class ReadFileTest extends ApiTestConf {
         Assert.assertNotNull(response.rowsInFile);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, response.rowsInFile, testFile.getAbsolutePath(), timer.time());
         
-        String toRead = ((Integer) (Integer.parseInt(response.size) - response.getRowsAsString().length())).toString();
+        String toRead = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
         
         FileContentResponse responsePointer = api(baseUrl).getTextFromPointer(filePath, toRead, FileContentResponse.class);
@@ -216,7 +217,7 @@ public class ReadFileTest extends ApiTestConf {
         Assert.assertNotNull(response.rowsInFile);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, response.rowsInFile, testFile.getAbsolutePath(), timer.time());
         
-        String toRead = ((Integer) (Integer.parseInt(response.size) - response.getRowsAsString().length()) ).toString();
+        String toRead = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length()) ).toString();
         timer.reset();
         
         Response rsResponse = api(baseUrl).getTextFromPointer(filePath, toRead, Response.class);
