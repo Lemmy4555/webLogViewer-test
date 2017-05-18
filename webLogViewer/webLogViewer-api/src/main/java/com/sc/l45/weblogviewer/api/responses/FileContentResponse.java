@@ -1,11 +1,9 @@
 package com.sc.l45.weblogviewer.api.responses;
 
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @XmlRootElement
@@ -24,16 +22,6 @@ public class FileContentResponse {
 		this.rowsRead = rowsRead;
 		this.size = size;
 		this.encoding = encoding;
-	}
-	
-	@JsonIgnore
-	public String getRowsAsString() {
-	    StringBuilder sb = new StringBuilder();
-	    Iterator<String> i = readContent.iterator();
-	    while(i.hasNext()) {
-	        sb.append(i.next());
-	    }
-	    return sb.toString();
 	}
 
 }
