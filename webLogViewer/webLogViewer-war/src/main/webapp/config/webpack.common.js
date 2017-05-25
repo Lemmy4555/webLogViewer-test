@@ -31,7 +31,8 @@ module.exports = {
       "Services": helpers.app("services"),
       "Helpers": helpers.app("helpers"),
       "Models": helpers.app("models"),
-      "Jobs": helpers.app("jobs")
+      "Jobs": helpers.app("jobs"),
+      "Images": helpers.src("assets/images")
     },
     modules: [
       path.resolve('.'),

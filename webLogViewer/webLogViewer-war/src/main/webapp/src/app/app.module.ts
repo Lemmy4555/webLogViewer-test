@@ -14,9 +14,14 @@ import { FileViewer } from "Components/file-viewer/file-viewer.component";
 import { ApiService } from 'Services/api/api.service';
 import { DbService } from 'Services/db/db.service';
 import { PopUpErrorLogElement } from './components/pop-up-error-log/element/pop-up-error-element.component';
+import { FilePathViewer } from 'Components/file-path-viewer/file-path-viewer.component';
+import { BackgroundNotifications } from 'Components/background-notifications/background-notifications.component';
+import { DbSvg } from 'Components/background-notifications/db-svg/db-svg.component';
+import { FileSvg } from 'Components/background-notifications/file-svg/file-svg.component';
+import { OkSvg } from 'Components/background-notifications/ok-svg/ok-svg.component';
+import { DownloadSvg } from 'Components/background-notifications/download-svg/download-svg.component';
 
 import '../styles/styles.scss';
-import { FilePathViewer } from './components/file-path-viewer/file-path-viewer.component';
 
 @NgModule({
   imports: [
@@ -35,7 +40,12 @@ import { FilePathViewer } from './components/file-path-viewer/file-path-viewer.c
     PopUpErrorLog,
     FileViewer,
     PopUpErrorLogElement,
-    FilePathViewer
+    FilePathViewer,
+    BackgroundNotifications,
+    DbSvg,
+    FileSvg,
+    OkSvg,
+    DownloadSvg
   ],
   providers: [
     ApiService,

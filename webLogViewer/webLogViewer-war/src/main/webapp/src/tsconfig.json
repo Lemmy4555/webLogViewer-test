@@ -9,7 +9,8 @@
       "Services/*": ["./services/*"],
       "Helpers/*": ["./helpers/*"],
       "Models/*": ["./models/*"],
-      "Jobs/*": ["./jobs/*"]
+      "Jobs/*": ["./jobs/*"],
+      "Images/*": ["./assets/images/*"]
     },
     "target": "es5",
     "module": "commonjs",
