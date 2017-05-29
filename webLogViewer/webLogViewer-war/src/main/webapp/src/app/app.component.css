@@ -23,10 +23,8 @@
 	width: 80%;
   overflow: hidden;
   padding: 0px;
-	border: 7px groove #2392d9;
-	border-left-style: ridge;
-	border-top-style: ridge;
-	padding: 10px;
+	display: flex;
+	flex-direction: column;
 }
 
 main {

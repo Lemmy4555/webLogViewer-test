@@ -18,6 +18,11 @@ export class FileViewerWriterJob {
   /** dimensione massima del chunk della stringa da scrivere sul viewer */
   private readonly MAX_CHUNK_SIZE: number = 2000; //righe
 
+  /** Callback called on job start */
+  private _onWriteJobStart: () => void = () => {};
+  /** Callback called on job end */
+  private _onWriteJobEnd: () => void = () => {};
+
   private fileViewer: FileViewer;
 
   constructor(fileViewer: FileViewer) {
@@ -77,7 +82,7 @@ export class FileViewerWriterJob {
   /**
    * Interrompe il job se e in esecuzione e reinizializza tutte le variaibili per farlo ripartire da 0
    */
-  public terminateJob() {
+  public terminateJob(): void {
     if(this.job) {
       this.logger.debug("Si sta terminando il job con %i/%i elementi elaborati", this.counter, this.queue.length);
       clearInterval(this.job);
@@ -85,22 +90,24 @@ export class FileViewerWriterJob {
       this.counter = 0;
       this.queue = [];
       this.logger.debug("Il job e stato terminato");
+      this._onWriteJobEnd();
     }
   }
 
   /**
    * Avvia un nuovo job se il job corrente non e gia in esecuzioe
    */
-  private startNewJob() {
+  private startNewJob(): void {
     if(!this.job) {
       this.logger.debug("Si sta avviando un nuovo job")
+      this._onWriteJobStart();
       this.job = window.setInterval(() => {
         this.jobImpl();
       }, this.SLEEP_TIME);
     }
   }
 
-  private jobImpl() {
+  private jobImpl(): void {
     if(this.queue.length < 1) {
       this.logger.debug("Non sono stati inseriti elementi da elaborare");
       this.terminateJob();
@@ -113,5 +120,21 @@ export class FileViewerWriterJob {
       this.logger.debug("Il job ha elaborato tutti i %i elementi in coda e verra terminato", this.queue.length);
       this.terminateJob();
     }
+  }
+
+  public onWriteJobStart(callback: () => void): FileViewerWriterJob {
+    if(!callback) {
+      callback = () => {};
+    }
+    this._onWriteJobStart = callback;
+    return this;
+  }
+
+  public onWriteJobEnd(callback: () => void): FileViewerWriterJob {
+    if(!callback) {
+      callback = () => {};
+    }
+    this._onWriteJobEnd = callback;
+    return this;
   }
 }

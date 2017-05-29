@@ -27,6 +27,7 @@ export class TailFileJob {
    */
   private _onFileTailed: (file: File) => void = (updatedFile: File) => { };
   private _onFileUnchanged: () => void = () => { };
+  private _onTailStarted: () => void = () => { };
 
   private apiService: ApiService;
 
@@ -49,7 +50,16 @@ export class TailFileJob {
     return this;
   }
 
-  public onFileTailed(callback: (file: File) => void = () => {}): TailFileJob {
+  public onFileTailStarted(callback: () => void): TailFileJob {
+    if(!callback) {
+      callback = () => {};
+    }
+
+    this._onTailStarted = callback;
+    return this
+  }
+
+  public onFileTailed(callback: (file: File) => void): TailFileJob {
     if(!callback) {
       callback = () => {};
     }
@@ -57,7 +67,7 @@ export class TailFileJob {
     return this;
   }
 
-  public onFileUnchanged(callback: () => void = () => {}): TailFileJob {
+  public onFileUnchanged(callback: () => void): TailFileJob {
     if(!callback) {
       callback = () => {};
     }
@@ -68,7 +78,7 @@ export class TailFileJob {
   /**
    * Avvia un nuovo job che rimane in lettura del file in input
    */
-  private startNewJob(fileInner: File) {
+  private startNewJob(fileInner: File): void {
     this.logger.debug("E stato richiesto un nuovo job per il tail del file " + fileInner.path);
     this._file = fileInner;
     this.job = window.setInterval(() => {
@@ -76,12 +86,13 @@ export class TailFileJob {
     }, this.UPDATE_INTERVAL);
   }
 
-  public jobImpl() {
+  public jobImpl(): void {
     this.logger.debug("Il file tailed ora ha " + this.file.readContent.length + " righe");
     if (this.getRequest) {
       this.logger.warn("E gia stata effettuata una richiesta alle API per il tail, si attendera che finisca");
       return;
     }
+    this._onTailStarted();
     this.getRequest = this.apiService.getTextFromPointer(this.file.path, this.file.size)
       .subscribe((result: FileCompleteJson) => {
         this.logger.debug("La chiamata alle API per il tail e avvenuta con successo per il file " + this.file.path);

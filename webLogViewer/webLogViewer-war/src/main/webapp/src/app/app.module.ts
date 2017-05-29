@@ -20,6 +20,8 @@ import { DbSvg } from 'Components/background-notifications/db-svg/db-svg.compone
 import { FileSvg } from 'Components/background-notifications/file-svg/file-svg.component';
 import { OkSvg } from 'Components/background-notifications/ok-svg/ok-svg.component';
 import { DownloadSvg } from 'Components/background-notifications/download-svg/download-svg.component';
+import { SyncSvg } from 'Components/background-notifications/sync-svg/file-svg.component';
+import { WriteSvg } from 'Components/background-notifications/write-svg/file-svg.component';
 
 import '../styles/styles.scss';
 
@@ -45,7 +47,9 @@ import '../styles/styles.scss';
     DbSvg,
     FileSvg,
     OkSvg,
-    DownloadSvg
+    DownloadSvg,
+    SyncSvg,
+    WriteSvg
   ],
   providers: [
     ApiService,

@@ -11,6 +11,7 @@ import { FileViewer } from 'Components/file-viewer/file-viewer.component';
 import { CacheHelper } from 'Helpers/cache.helper';
 import { Logger } from 'Logger/logger';
 import { FilePathViewer } from 'Components/file-path-viewer/file-path-viewer.component';
+import { BackgroundNotifications } from 'Components/background-notifications/background-notifications.component';
 
 @Component({
   selector: "web-log-viewer",
@@ -30,6 +31,8 @@ export class AppComponent implements OnInit {
   private fileViewer: FileViewer;
   @ViewChild(FilePathViewer)
   private filePathViewer: FilePathViewer;
+  @ViewChild(BackgroundNotifications)
+  private backgroundNotifications: BackgroundNotifications;
 
   private apiService: ApiService;
   private dbService: DbService;
@@ -48,33 +51,37 @@ export class AppComponent implements OnInit {
     this.fileViewerHandler = new FileViewerHandler(this.fileViewer, this.apiService, this.dbService);
 
     this.fileViewerHandler
-      .onOpenNewFileError((message: string) => {
-        this.fileViewer.showMessage(message);
-      })
-      .onUnhandledError((message: string) => {
-        this.popUpErrorLog.showLog(message);
-      });
+      .onOpenNewFileError((message: string) => { this.fileViewer.showMessage(message); })
+      .onUnhandledError((message: string) => { this.popUpErrorLog.showLog(message); })
+      .onSyncronizationStarted(() => { this.backgroundNotifications.showSyncNotification(); })
+      .onSyncronizationFinished(() => { this.backgroundNotifications.hideSyncNotification(); })
+      .onFileTailStarted(() => { this.backgroundNotifications.showDownloadNotification(); })
+      .onFileTailed(() => { this.backgroundNotifications.hideDownloadNotification(); })
+      .onWriteJobStart(() => { this.backgroundNotifications.showWriteNotification(); })
+      .onWriteJobEnd(() => { this.backgroundNotifications.showOkNotification(); })
+      .onFullFileDownloadStarted(() => { this.backgroundNotifications.showFileNotification(); })
+      .onFullFileDownloaded(() => { this.backgroundNotifications.hideFileNotification(); });
 
     this.folderExplorerHandler
       .onApiCallError((message) => {
         this.folderExplorer.showMessage(message);
       })
       .onOpenFile((fileName: string) => this.fileViewerHandler.openNewFile(fileName))
-      .onOpenFolder((path: Array<string>) => {this.filePathViewer.path = path});
+      .onOpenFolder((path: Array<string>) => { this.filePathViewer.path = path });
 
     this.filePathInputText.onPathInsert((path: string) => this.folderExplorerHandler.navigateTo(path));
     this.filePathViewer.onFolderSelected((path: string) => this.folderExplorerHandler.navigateTo(path));
 
     //Recupera dal DB l'ultimo file aperto.
     this.dbService.connect(() => {
-      if(CacheHelper.getLastOpenedFile()) {
+      if (CacheHelper.getLastOpenedFile()) {
         this.fileViewerHandler.openNewFile(CacheHelper.getLastOpenedFile());
       } else {
         this.logger.warn("Non c'e nessun file in cache");
         this.fileViewer.showMessage("Selezionare un file da leggere");
       }
 
-      if(CacheHelper.getLastOpenedFolder()) {
+      if (CacheHelper.getLastOpenedFolder()) {
         this.folderExplorerHandler.navigateTo(CacheHelper.getLastOpenedFolder());
       } else {
         this.folderExplorerHandler.navigateToHomeDir();

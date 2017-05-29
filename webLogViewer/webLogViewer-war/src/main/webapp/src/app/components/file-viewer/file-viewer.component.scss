@@ -1,5 +1,10 @@
 @import "file-viewer.component.json";
 
+:host {
+  flex-grow: 1;
+  display: flex;
+}
+
 main {
   --message-box-height: 100%;
 }
@@ -23,10 +28,13 @@ main .content-wrapper {
   overflow-y: auto;
   width: var(--message-box-height);
   height: 100%;
+  border: 7px groove #2392d9;
+	border-left-style: ridge;
+	border-top-style: ridge;
+	padding: 10px;
 }
 
 main {
-	height: 100%;
 	width: 100%;
 }
 

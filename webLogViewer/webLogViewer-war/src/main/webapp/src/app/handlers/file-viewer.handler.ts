@@ -43,6 +43,18 @@ export class FileViewerHandler {
   private _onOpenNewFileError: (message: string) => void = (message) => { };
   /** Callback richiamata quando si verifica un errore non gestito */
   private _onUnhandledError: (message: string) => void = (message) => { };
+  /** Callback called on sync started */
+  private _onSyncronizationStarted: () => void = () => { };
+  /** Callback called on sync finished */
+  private _onSyncronizationFinished: () => void = () => { };
+  /** Callback called on file tail started (on download requested) */
+  private _onFileTailStarted: () => void = () => { };
+  /** Callback called on fail tailed (file downloaded) */
+  private _onFileTailed: () => void = () => { };
+  /** Callback called on file tail started (on download requested) */
+  private _onFullFileDownloadStarted: () => void = () => { };
+  /** Callback called on fail tailed (file downloaded) */
+  private _onFullFileDownloaded: () => void = () => { };
 
   /** 
    * Chiamata alle API che scarica tutto il file oppure la chiamata che ottiene l'ultima riga del file per
@@ -81,7 +93,6 @@ export class FileViewerHandler {
    * sul FileViewer
    */
   private handleUnsincronizedTailedFile(result: File) {
-    var fileForUpdate = new File(this.filePath, result.readContent, result.rowsRead, result.size, result.encoding);
     this.fileWriterJob.writeText(result.readContent);
   }
 
@@ -155,7 +166,7 @@ export class FileViewerHandler {
     return this;
   }
 
-  private _openNewFile(filePathInner: string, onFileRead: (fileRead: File) => void) {
+  private _openNewFile(filePathInner: string, onFileRead: (fileRead: File) => void): void {
     let filePath = filePathInner;
     var readFilePromise = new Promise(
       (success, reject) => {
@@ -170,18 +181,32 @@ export class FileViewerHandler {
             this.logger.debug("Il file %s e stato trovato sul DB e verra riaperto", filePathInner);
             var result = request.result;
             var fileRead = new File(result.path, result.readContent, result.rowsRead, result.size, result.encoding);
-            this.tailFileJob.onFileTailed(this.handleSincronizedTailedFile);
+            this.tailFileJob
+              .onFileTailStarted(this._onFileTailStarted)
+              .onFileTailed((file: File) => {
+                this.handleSincronizedTailedFile(file);
+                this._onFileTailed();
+              })
+              .onFileUnchanged(() => this._onFileTailed);
             success(fileRead);
           } else {
-            this.tailFileJob.onFileTailed(this.handleUnsincronizedTailedFile);
+            this.tailFileJob
+              .onFileTailStarted(this._onFileTailStarted)
+              .onFileTailed((file: File) => {
+                this.handleUnsincronizedTailedFile(file);
+                this._onFileTailed();
+              })
+              .onFileUnchanged(() => { this._onFileTailed });
             //Se il file non e stato ancora registrato su DB
             this.logger.debug("Il file %s non e stato trovato sul DB e verra richiesto alle API", filePathInner);
             this.apiService.getFileData(filePathInner).subscribe((result: FileDataReponse) => {
               if (result.isFile) {
+                this._onFileTailStarted();
                 this.apiService.getTailText(filePathInner, this.NEW_FILE_LINES_TO_READ)
                   .subscribe((result: FileComplete) => {
                     //Tail del file non ancora presente su DB
                     var fileToInsert = new File(filePathInner, result.readContent, result.rowsRead, result.size, result.encoding);
+                    this._onFileTailed();
                     this.handleNewFileOpening(fileToInsert);
                     success(fileToInsert);
                   }, (error: GenericResponse) => {
@@ -235,17 +260,21 @@ export class FileViewerHandler {
    */
   private handleNewFileOpening(fileToInsert: File) {
     //Ottengo tutto il file
+    this._onFullFileDownloadStarted();
     this.fullFileApiCall = this.apiService.getFullFile(fileToInsert.path).subscribe((response: FileComplete) => {
+      this._onFullFileDownloaded();
       let fileToSync = new FileComplete(fileToInsert.path, response.readContent, response.rowsRead, response.size, response.encoding, response.rowsInFile);
       var currentJobFileSize;
       //La prima volta che il job avra terminato di effettuare un'elaborazione currentJobFileSize avra il valore
       this.tailFileJob.onFileTailed(() => {
         currentJobFileSize = this.tailFileJob.file.size;
         this.syncronizeFileWithCache(fileToSync, currentJobFileSize);
+        this._onFileTailed();
       });
       this.tailFileJob.onFileUnchanged(() => {
         currentJobFileSize = this.tailFileJob.file.size;
         this.syncronizeFileWithCache(fileToSync, currentJobFileSize);
+        this._onFileTailed();
       });
     }, (error: GenericResponse) => {
       let errorMsg = "Non e stato possibile inserire in cache il file, errore durante il download: ("
@@ -257,6 +286,7 @@ export class FileViewerHandler {
 
   private syncronizeFileWithCache(fileToSync: FileComplete, currentJobFileSize: number) {
     //Siccome devo sencronizzare il file da mettere in cache con quanto si vede in output, fermo il job che taila il file a video
+    this._onSyncronizationStarted();
     this.tailFileJob.terminateJob();
     this.tailFileJob.onFileUnchanged(null);
     this.tailFileJob.onFileTailed(null);
@@ -299,13 +329,17 @@ export class FileViewerHandler {
           fileToSync.rowsInFile + syncFileResponse.rowsRead);
         //Cacho il file completo
         this.dbHelper.addFile(fileSync.json());
-        this.tailFileJob.onFileTailed((file) => {
-          this.handleSincronizedTailedFile(file);
-        });
-        let fileGap: File = this.createFileGap(fileSync, syncFileResponse, unsyncFileRensponse);
+        this.tailFileJob
+          .onFileTailed((file) => {
+            this.handleSincronizedTailedFile(file);
+            this._onFileTailed();
+          })
+          .onFileUnchanged(() => { this._onFileTailed() });
+        let fileGap: File = this.createGapFile(fileSync, syncFileResponse, unsyncFileRensponse);
         //Faccio partire il job per il file cachato, d'ora in poi il file in cache e quello a video sono sincronizzati
         this.writeText(fileGap);
         this.logger.info("Il file %s e stato sincronizzato con la cache su DB", path);
+        this._onSyncronizationFinished();
       }, (error: GenericResponse) => {
         let errorMsg = "Non e stato possibile inserire in cache il file che si sta visualizzando: ("
           + error.errorCode + ") " + error.responseText;
@@ -314,7 +348,7 @@ export class FileViewerHandler {
       });
   }
 
-  private createFileGap(fileSync: FileComplete, syncFileResponse: FileComplete, unsyncFileRensponse: FileComplete): File {
+  private createGapFile(fileSync: FileComplete, syncFileResponse: FileComplete, unsyncFileRensponse: FileComplete): File {
     //Confronto il file per la sincronizzazione con quello completo per ottenere il file aggiornato con tutto il contenuto
     let minRowsInFile;
     let maxRowsInFile;
@@ -340,5 +374,69 @@ export class FileViewerHandler {
 
   private getFileViewerContentLength(): number {
     return this.fileViewer.contentList.length;
+  }
+
+  public onSyncronizationStarted(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onSyncronizationStarted = callback;
+    return this;
+  }
+
+  public onSyncronizationFinished(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onSyncronizationFinished = callback;
+    return this;
+  }
+
+  public onFileTailStarted(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onFileTailStarted = callback;
+    return this;
+  }
+
+  public onFileTailed(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onFileTailed = callback;
+    return this;
+  }
+
+  public onWriteJobStart(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this.fileWriterJob.onWriteJobStart(callback);
+    return this;
+  }
+
+  public onWriteJobEnd(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this.fileWriterJob.onWriteJobEnd(callback);
+    return this;
+  }
+
+  public onFullFileDownloadStarted(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onFullFileDownloadStarted = callback;
+    return this;
+  }
+
+  public onFullFileDownloaded(callback: () => void): FileViewerHandler {
+    if (!callback) {
+      callback = () => { };
+    }
+    this._onFullFileDownloaded = callback;
+    return this;
   }
 }
