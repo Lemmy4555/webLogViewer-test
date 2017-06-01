@@ -100,31 +100,39 @@ public class RestApi {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TAIL_TEXT)
-    public Response getTailText(@QueryParam("filePath") String filePath, @QueryParam("rowsFromEnd") String rowsFromEnd, 
-            @QueryParam("getLength") boolean isLengthToGet, @Context Request request, @Context UriInfo ui) {
+    public Response getTailText(@QueryParam("filePath") String filePath, @QueryParam("maxRowsToRead") String maxRowsToRead, 
+            @QueryParam("getLength") boolean isLengthToGet, @QueryParam("pointer") long pointer,
+            @Context Request request, @Context UriInfo ui) {
         Response response = new DefaultFileApiBehavior<FileContentResponse>(ui) {
-            private String rowsFromEndIn;
+            private int maxRowsToReadInner;
             private File file = new File(filePath);
+            private long pointerInner;
             
             @Override
             FileContentResponse api() throws IOException {
-                Integer rowsFromEndLong = Integer.parseInt(rowsFromEndIn);
-                return apiMgr.getTailText(file, rowsFromEndLong, isLengthToGet);
+                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isLengthToGet);
             }
 
             @Override
             void before() throws FileNotFoundException, IOException, FileTooBigException {
                 fileMgr.checkFile(filePath);
-                if (StringUtils.isEmpty(rowsFromEnd)) {
-                    rowsFromEndIn = "4";
+                
+                if (StringUtils.isEmpty(maxRowsToRead)) {
+                    maxRowsToReadInner = 4;
                 } else {
-                    rowsFromEndIn = rowsFromEnd;
+                    maxRowsToReadInner = Integer.parseInt(maxRowsToRead);
+                }
+                
+                if(pointer < 0) {
+                	pointerInner = 0;
+                } else {
+                	pointerInner = pointer;
                 }
             }
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-                return new CacheControlMgr(request, file, rowsFromEndIn);
+                return new CacheControlMgr(request, file, Integer.toString(maxRowsToReadInner));
             }
         }.call();
         return response;

@@ -5,13 +5,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.ReversedLinesFileReader;
@@ -31,7 +31,7 @@ public class ReverseFileReadTest extends TestConf {
     
     @Test
     public void benchmarkReverseReadFile() throws IOException {
-        final int repeat = 10;
+        final int repeat = 1;
         final int linesToRead = 60000;
         
         //La prima volta che leggo il file ci mette di pi�, quindi effettuo una lettura per non falsare i risultati
@@ -100,6 +100,8 @@ public class ReverseFileReadTest extends TestConf {
     
     private List<String> readRawTextWithBuffer(int linesToRead) throws IOException {
     	int BUFFER_SIZE = 102400;
+    	Pattern pattern = Pattern.compile("\r\n|\r|\n");
+        Matcher matcher = null;
     	
         try(RandomAccessFile raf = new RandomAccessFile(testFile, "r");) {
             byte[] buffer = new byte[BUFFER_SIZE];
@@ -116,25 +118,35 @@ public class ReverseFileReadTest extends TestConf {
             String possibleTruncatedLine = null;
             while(raf.read(buffer) != -1 && allLines.size() < linesToRead) {
                 String line = new String(buffer, StandardCharsets.UTF_8);
-                String[] lines = line.split("\r\n|\r|\n");
-                if(lines.length == 0) {
+                List<String> lines = new ArrayList<>();
+                matcher = pattern.matcher(line);
+                int lastIndex = 0;
+                while(matcher.find()) {
+                	lines.add(line.substring(lastIndex, matcher.end()));
+                	lastIndex = matcher.end();
+                }
+                String lastLine = line.substring(lastIndex, line.length());
+                if(!lastLine.isEmpty()) {
+                	lines.add(lastLine);
+                }
+                if(lines.size() == 0) {
                 	break;
                 }
-                if(lines.length > 1) {
+                if(lines.size() > 1) {
                 	if(possibleTruncatedLine != null) {
-                		possibleTruncatedLine = lines[lines.length - 1].concat(possibleTruncatedLine);
+                		possibleTruncatedLine = lines.get(lines.size() - 1).concat(possibleTruncatedLine);
                 		allLines.add(0, possibleTruncatedLine);
-                		allLines.addAll(0, Arrays.asList(Arrays.copyOfRange(lines, 1, lines.length - 1)));
-                		possibleTruncatedLine = lines[0];
+                		allLines.addAll(0, lines.subList(1, lines.size() - 1));
+                		possibleTruncatedLine = lines.get(0);
                 	} else {
-                		allLines.addAll(0, Arrays.asList(Arrays.copyOfRange(lines, 1, lines.length)));
-                		possibleTruncatedLine = lines[0];
+                		allLines.addAll(0, lines.subList(1, lines.size()));
+                		possibleTruncatedLine = lines.get(0);
                 	}
                 } else {
                 	if(possibleTruncatedLine != null) {
-                		possibleTruncatedLine = lines[0].concat(possibleTruncatedLine);
+                		possibleTruncatedLine = lines.get(0).concat(possibleTruncatedLine);
                 	} else {
-                		possibleTruncatedLine = lines[0];
+                		possibleTruncatedLine = lines.get(0);
                 	}
                 }
                 

@@ -1,7 +1,6 @@
 package com.sc.l45.weblogviewer.api.mgr;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +16,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sc.l45.weblogviewer.api.RestApi;
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
@@ -49,9 +47,9 @@ public class ApiMgr {
 		return response;
 	}
 	
-	public FileContentResponse getTailText(File file, int rowsFromEndLong, boolean isTotRowsToGet) throws IOException {
+	public FileContentResponse getTailText(File file, int maxRowsToRead, long pointer, boolean isTotRowsToGet) throws IOException {
 	    Timer timer = new Timer();
-        FileContentResponse response = FileReaderFromEnd.read(file, rowsFromEndLong, isTotRowsToGet);
+        FileContentResponse response = FileReaderFromEnd.read(file, maxRowsToRead, pointer, isTotRowsToGet);
         logRowsRead(response, file, timer);
         return response;
 	}
