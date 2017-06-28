@@ -18,12 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
+import com.sc.l45.weblogviewer.api.mgr.readers.FileReaderFromEnd;
+import com.sc.l45.weblogviewer.api.mgr.readers.FileReaderFromLine;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.responses.FileListDataResponse;
-import com.sc.l45.weblogviewer.api.utils.FileReaderFromEnd;
-import com.sc.l45.weblogviewer.api.utils.FileReaderFromLine;
 import com.sc.l45.weblogviewer.api.utils.FileUtils;
 import com.sc.l45.weblogviewer.api.utils.Timer;
 import com.sc.l45.weblogviewer.reader.BufferedReaderLineSeparator;
@@ -54,9 +54,9 @@ public class ApiMgr {
         return response;
 	}
 	
-	public FileContentResponse getTextFromLine(File file, int lineFromStartRead) throws IOException {
+	public FileContentResponse getTextFromLine(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
 	    Timer timer = new Timer();
-	    FileContentResponseComplete response = FileReaderFromLine.read(file, lineFromStartRead);
+	    FileContentResponse response = FileReaderFromLine.read(file, lineFromStartRead, isTotRowsToGet);
 	    logRowsRead(response, file, timer);
 	    return response;
 	}
@@ -68,7 +68,8 @@ public class ApiMgr {
         response = new FileContentResponseComplete(
                 allLines, Integer.toString(allLines.size()), 
                 Long.toString(file.length()), FileConstants.ENCODING.name(),
-                Integer.toString(allLines.size())
+                Integer.toString(allLines.size()),
+                Long.toString(file.length())
             );
         return response;
     }
@@ -114,12 +115,14 @@ public class ApiMgr {
                 if(!getLastRowReadNumber) {
                     response = new FileContentResponse(
                             readContent, Integer.toString(readContent.size()), Long.toString(file.length()),
-                            FileConstants.ENCODING.name()
+                            FileConstants.ENCODING.name(),
+                            Long.toString(file.length())
                         );
                 } else {
                     response = new FileContentResponseComplete(
                             readContent, Integer.toString(readContent.size()), Long.toString(file.length()),
-                            FileConstants.ENCODING.name(), Integer.toString(rowsRead)
+                            FileConstants.ENCODING.name(), Integer.toString(rowsRead),
+                            Long.toString(file.length())
                         );
                 }
                 return response;

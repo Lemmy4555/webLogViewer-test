@@ -53,17 +53,28 @@ export class DbService {
       this.logger.warn("USE_CACHE_DB e false, il db verra ripulito");
     }
     //Tentativo di connessione al DB
+    if (!Constants.USE_CACHE_DB) {
+      var DBDeleteRequest = window.indexedDB.deleteDatabase("toDoList");
+
+      DBDeleteRequest.onerror = function(event) {
+        console.log("Error deleting database.");
+      };
+      
+      DBDeleteRequest.onsuccess = function(event) {
+        console.log("Database deleted successfully");
+          
+        console.log(event.result); // should be undefined
+      };
+        this.db.transaction([DbFilesConstants.tableName], "readwrite")
+          .objectStore(DbFilesConstants.tableName).clear();
+        this.logger.error("Il db e stato pulito");
+      }
     var request = window.indexedDB.open(this.dbName);
     request.onerror = (event) => {
       this.logger.error("Errore durante la connessione all\'indexedDB. Nome del db: %s", this.dbName);
     };
     request.onsuccess = (event: any) => {
       this.db = event.target.result;
-      if (!Constants.USE_CACHE_DB) {
-        this.db.transaction([DbFilesConstants.tableName], "readwrite")
-          .objectStore(DbFilesConstants.tableName).clear();
-        this.logger.warn("Il db e stato pulito");
-      }
       callback();
       return;
     };

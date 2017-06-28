@@ -22,6 +22,7 @@ import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.responses.utils.FileContentResponseUtils;
 import com.sc.l45.weblogviewer.api.utils.Timer;
+import com.sc.l45.weblogviewer.test.api.TestApiMgr;
 import com.sc.l45.weblogviewer.test.config.ApiTestConf;
 import com.sc.l45.weblogviewer.test.config.TestConf;
 
@@ -52,7 +53,7 @@ public class ApiTest extends ApiTestConf {
         String rowsToReadFromEnd = "10";
         
         String filePath = testFile.getAbsolutePath();
-        FileContentResponseComplete response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        FileContentResponseComplete response = new TestApiMgr(api(baseUrl)).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {} righe dal file {} in: {}", response.rowsRead, testFile.getAbsolutePath(), timer.time());
@@ -60,7 +61,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = "400000";
-        response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        response =  new TestApiMgr(api(baseUrl)).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {} righe dal file {} in: {}", response.rowsRead, testFile.getAbsolutePath(), timer.time());
@@ -68,12 +69,13 @@ public class ApiTest extends ApiTestConf {
     
     @Test
     @RunAsClient
+    //TODO to be updated
     public void getTailTextWithCache(@ArquillianResource URL baseUrl) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
         Timer timer = new Timer();
         String rowsToReadFromEnd = "400000";
         
         String filePath = testFile.getAbsolutePath();
-        Response rsResponse = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", Response.class);
+        Response rsResponse = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true", Response.class);
         FileContentResponseComplete response = rsResponse.readEntity(FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
@@ -82,14 +84,14 @@ public class ApiTest extends ApiTestConf {
         
         timer.reset();
         
-        Response rsResponse304 = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", Response.class, rsResponse.getEntityTag());
+        Response rsResponse304 = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true", Response.class, rsResponse.getEntityTag());
         Assert.assertEquals(304, rsResponse304.getStatus());
         logger.info("Tornato 304 in: {}", timer.time());
         
         timer.reset();
         
         rowsToReadFromEnd = "10";
-        response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", FileContentResponseComplete.class, rsResponse.getEntityTag());
+        response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true", FileContentResponseComplete.class, rsResponse.getEntityTag());
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.rowsInFile);
@@ -98,33 +100,32 @@ public class ApiTest extends ApiTestConf {
 
     @Test
     @RunAsClient
+    //TODO rows in file must be added
     public void getTextFromLine(@ArquillianResource URL baseUrl) throws JsonParseException, JsonMappingException, IOException, URISyntaxException {
         Timer timer = new Timer();
+        
         String fromLine = "10";
         
         String filePath = testFile.getAbsolutePath();
-        FileContentResponseComplete response = api(baseUrl).getTextFromLine(filePath, fromLine, FileContentResponseComplete.class);
+        FileContentResponseComplete response = new TestApiMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
-        Assert.assertNotNull(response.rowsInFile);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, response.rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
         
         timer.reset();
         
         fromLine = "400000";
-        response = api(baseUrl).getTextFromLine(filePath, "400000", FileContentResponseComplete.class);
+        response = api(baseUrl).getTextFromLine(filePath, fromLine, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
-        Assert.assertNotNull(response.rowsInFile);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, response.rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
         
         timer.reset();
         
         fromLine = "310000";
-        response = api(baseUrl).getTextFromLine(filePath, "310000", FileContentResponseComplete.class);
+        response = api(baseUrl).getTextFromLine(filePath, fromLine, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
-        Assert.assertNotNull(response.rowsInFile);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, response.rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
     }
     
@@ -135,7 +136,7 @@ public class ApiTest extends ApiTestConf {
         String fromLine = "10";
         
         final String filePath = testFile.getAbsolutePath();
-        Response rsResponse = api(baseUrl).getTextFromLine(filePath, fromLine, Response.class);
+        Response rsResponse = api(baseUrl).getTextFromLine(filePath, fromLine, "true", Response.class);
         FileContentResponseComplete response = rsResponse.readEntity(FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
@@ -144,14 +145,14 @@ public class ApiTest extends ApiTestConf {
         
         timer.reset();
         
-        Response response304 = api(baseUrl).getTextFromLine(filePath, fromLine, Response.class, rsResponse.getEntityTag());
+        Response response304 = api(baseUrl).getTextFromLine(filePath, fromLine, "false", Response.class, rsResponse.getEntityTag());
         Assert.assertEquals(304, response304.getStatus());
         logger.info("Tornato 304 in: {}", timer.time());
         
         timer.reset();
         
         fromLine = "310000";
-        response = api(baseUrl).getTextFromLine(filePath, fromLine, FileContentResponseComplete.class, rsResponse.getEntityTag());
+        response = api(baseUrl).getTextFromLine(filePath, fromLine, "false", FileContentResponseComplete.class, rsResponse.getEntityTag());
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.rowsInFile);
@@ -184,7 +185,7 @@ public class ApiTest extends ApiTestConf {
         Timer timer = new Timer();
         
         String filePath = testFile.getAbsolutePath();
-        FileContentResponseComplete response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        FileContentResponseComplete response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", Long.toString(testFile.length()), FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -195,7 +196,7 @@ public class ApiTest extends ApiTestConf {
         String toRead = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
         
-        FileContentResponse responsePointer = api(baseUrl).getTextFromPointer(filePath, toRead, FileContentResponse.class);
+        FileContentResponse responsePointer = api(baseUrl).getTextFromPointer(filePath, toRead, "false", FileContentResponse.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, response.rowsRead);
@@ -209,7 +210,7 @@ public class ApiTest extends ApiTestConf {
         Timer timer = new Timer();
         
         String filePath = testFile.getAbsolutePath();
-        FileContentResponseComplete response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        FileContentResponseComplete response = api(baseUrl).getTailText(filePath, rowsToReadFromEnd, "true", Long.toString(testFile.length()), FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -220,7 +221,7 @@ public class ApiTest extends ApiTestConf {
         String toRead = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length()) ).toString();
         timer.reset();
         
-        Response rsResponse = api(baseUrl).getTextFromPointer(filePath, toRead, Response.class);
+        Response rsResponse = api(baseUrl).getTextFromPointer(filePath, toRead, "false", Response.class);
         FileContentResponse responsePointer = rsResponse.readEntity(FileContentResponse.class);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, response.rowsRead);
@@ -228,7 +229,7 @@ public class ApiTest extends ApiTestConf {
         
         timer.reset();
         
-        Response response304 = api(baseUrl).getTextFromPointer(filePath, toRead, Response.class, rsResponse.getEntityTag());
+        Response response304 = api(baseUrl).getTextFromPointer(filePath, toRead, "false", Response.class, rsResponse.getEntityTag());
         Assert.assertEquals(response304.getStatus(), 304);
         logger.info("Tornato 304 in: {}", timer.time());
     }

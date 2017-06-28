@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.sc.l45.weblogviewer.api.cache.CacheControlMgr;
 import com.sc.l45.weblogviewer.api.config.RestPaths;
-import com.sc.l45.weblogviewer.api.exceptions.FileTooBigException;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
 import com.sc.l45.weblogviewer.api.mgr.ApiMgr;
 import com.sc.l45.weblogviewer.api.responses.DefaultDirResponse;
@@ -40,7 +39,7 @@ public class RestApi {
         return new DefaultApiBehavior<FileDataResponse>(ui) {
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
             }
 
@@ -60,7 +59,7 @@ public class RestApi {
         return new DefaultApiBehavior<FileListDataResponse>(ui) {
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 if (filePath == null || filePath.isEmpty()) {
                     throw new IllegalArgumentException("Il parametro path non e stato valorizzato");
                 }
@@ -101,7 +100,7 @@ public class RestApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TAIL_TEXT)
     public Response getTailText(@QueryParam("filePath") String filePath, @QueryParam("maxRowsToRead") String maxRowsToRead, 
-            @QueryParam("getLength") boolean isLengthToGet, @QueryParam("pointer") long pointer,
+            @QueryParam("isTotRowsToGet") boolean isTotRowsToGet, @QueryParam("pointer") long pointer,
             @Context Request request, @Context UriInfo ui) {
         Response response = new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private int maxRowsToReadInner;
@@ -110,11 +109,11 @@ public class RestApi {
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isLengthToGet);
+                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isTotRowsToGet);
             }
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
                 
                 if (StringUtils.isEmpty(maxRowsToRead)) {
@@ -142,18 +141,18 @@ public class RestApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TEXT_FROM_LINE)
     public Response getTextFromLine(@QueryParam("filePath") String filePath, @QueryParam("lineFrom") String lineFrom, 
-            @Context Request request, @Context UriInfo ui) {
+    		@QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
         return new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private File file = new File(filePath);
             
             @Override
             FileContentResponse api() throws IOException {
                 int lineFromInt = Integer.parseInt(lineFrom);
-                return apiMgr.getTextFromLine(file, lineFromInt);
+                return apiMgr.getTextFromLine(file, lineFromInt, Boolean.parseBoolean(isTotRowsToGet));
             }
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
             }
             
@@ -178,7 +177,7 @@ public class RestApi {
             }
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
             }
             
@@ -204,7 +203,7 @@ public class RestApi {
             }
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
             }
             
@@ -225,11 +224,11 @@ public class RestApi {
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromLine(file, 0);
+                return apiMgr.getTextFromLine(file, 0, true);
             }
 
             @Override
-            void before() throws FileNotFoundException, IOException, FileTooBigException {
+            void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
             }
             
