@@ -30,9 +30,9 @@ public class FileReaderFromEnd {
         }
         
         if(maxRowsToRead <= 0 || pointer <= 0) {
-            return createFileContentResponse(new ReadLinesResult(), fileLength, rowsInFile);
+            return ReaderUtils.createFileContentResponse(new ReadLinesResult(), fileLength, rowsInFile);
         }
-        return createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
+        return ReaderUtils.createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
     }
     
     private static ReadLinesResult readRawTextReverse(File file, int maxRowsToRead, long pointer, long fileLength) throws IOException {
@@ -61,7 +61,7 @@ public class FileReaderFromEnd {
         	newPointer -= extraChars;
         }
         
-        byte[] buffer = new byte[BUFFER_SIZE];
+        byte[] buffer = new byte[BUFFER_SIZE + extraChars];
     	
         try(RandomAccessFile raf = new RandomAccessFile(file, "r");) {
             raf.seek(newPointer);
@@ -109,31 +109,6 @@ public class FileReaderFromEnd {
             
             return new ReadLinesResult();
         }
-    }
-    
-    private static FileContentResponse createFileContentResponse(ReadLinesResult readLinesResult, long fileLength, Integer rowsInFile) {
-    	FileContentResponse response;
-    	
-    	int size = readLinesResult.linesRead.size();
-    	if(!readLinesResult.isFirstLineFull) {
-    		size--;
-    	}
-		
-    	if(rowsInFile != null) {
-    		response = new FileContentResponseComplete(
-    				readLinesResult.linesRead, Integer.toString(size), 
-    				Long.toString(fileLength), FileConstants.ENCODING.name(),
-    				Integer.toString(rowsInFile),
-    				Long.toString(readLinesResult.pointer)
-    				);
-    	} else {
-    		response = new FileContentResponse(
-    				readLinesResult.linesRead, Integer.toString(size), 
-    				Long.toString(fileLength), FileConstants.ENCODING.name(),
-    				Long.toString(readLinesResult.pointer)
-    				);
-    	}
-    	return response;
     }
 
 }

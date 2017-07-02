@@ -21,34 +21,9 @@ public class FileReaderFromLine {
             rowsInFile = ReaderUtils.countLinesInFile(file);
         }
         
-        return createFileContentResponse(readFileWithBufferedReader(file, lineFromStartRead), file.length(), rowsInFile);
+        return ReaderUtils.createFileContentResponse(readFileWithBufferedReader(file, lineFromStartRead), file.length(), rowsInFile);
     }
-    
-    private static FileContentResponse createFileContentResponse(ReadLinesResult readLinesResult, long fileLength, Integer rowsInFile) {
-    	FileContentResponse response;
-    	
-    	int size = readLinesResult.linesRead.size();
-    	if(!readLinesResult.isFirstLineFull) {
-    		size--;
-    	}
-		
-    	if(rowsInFile != null) {
-    		response = new FileContentResponseComplete(
-    				readLinesResult.linesRead, Integer.toString(size), 
-    				Long.toString(fileLength), FileConstants.ENCODING.name(),
-    				Integer.toString(rowsInFile),
-    				Long.toString(readLinesResult.pointer)
-    				);
-    	} else {
-		response = new FileContentResponse(
-				readLinesResult.linesRead, Integer.toString(size), 
-				Long.toString(fileLength), FileConstants.ENCODING.name(),
-				Long.toString(readLinesResult.pointer)
-				);
-    	}
-		
-    	return response;
-	}
+ 
 
 	private static ReadLinesResult readFileWithBufferedReader(File file, int lineFromStartRead) throws IOException {
     	int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;

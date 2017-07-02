@@ -30,13 +30,10 @@ public class TestApiMgr {
 			rowsToRead = rowsInFile;
 		}
 		rowsToRead -= rowsRead;
-		int i = 0;
 		if(rowsToRead > 0) {
 			while(true) {
-				if(i > 770) {
-					System.out.println("aa");
-				} else {
-					System.out.println(i);
+				if(rowsToRead < 1000) {
+					System.out.print(0);
 				}
 				FileContentResponse responsePart = testApi.getTailText(filePath, rowsToRead.toString(), newPointer.toString(), "false", FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
@@ -47,7 +44,6 @@ public class TestApiMgr {
 				if(rowsToRead <= 0) {
 					break;
 				}
-				i++;
 			}
 		}
 		
@@ -86,6 +82,7 @@ public class TestApiMgr {
 		response.readContent = content;
 		Integer totRowsRead = Integer.parseInt(response.rowsRead) + Integer.parseInt(toConcat.rowsRead);
 		response.rowsRead = totRowsRead.toString();
+		response.currentPointer = toConcat.currentPointer;
 		return response;
 	}
 
