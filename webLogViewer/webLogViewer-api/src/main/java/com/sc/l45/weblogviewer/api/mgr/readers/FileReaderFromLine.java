@@ -8,10 +8,12 @@ import java.util.List;
 
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
-import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
+import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
-public class FileReaderFromLine {
-    public static FileContentResponse read(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
+public class FileReaderFromLine extends FileReaderAbstract{
+    static public FileContentResponse read(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
+    	long fileLength = file.length();
+    	
         if(lineFromStartRead < 0) {
             lineFromStartRead = 0;
         }
@@ -21,28 +23,33 @@ public class FileReaderFromLine {
             rowsInFile = ReaderUtils.countLinesInFile(file);
         }
         
-        return ReaderUtils.createFileContentResponse(readFileWithBufferedReader(file, lineFromStartRead), file.length(), rowsInFile);
+        return createFileContentResponse(readFileWithBufferedReader(file, lineFromStartRead, fileLength), fileLength, rowsInFile);
     }
  
 
-	private static ReadLinesResult readFileWithBufferedReader(File file, int lineFromStartRead) throws IOException {
+	private static ReadLinesResult readFileWithBufferedReader(File file, int lineFromStartRead, long fileLength) throws IOException {
     	int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;
         
     	ReadLinesResult result = new ReadLinesResult();
         
+    	/* At the beginning so much character as buffer size, in a second moment i'll 
+    	 * determine if last line is terminated so actually i don't need to read extra chars */
         byte[] buffer = new byte[BUFFER_SIZE];
     	
-    	try(RandomAccessFile raf = new RandomAccessFile(file, "r");) {  		
+    	try(RandomAccessFile raf = new RandomAccessFile(file, "r");) {
+    		//This is used to determine if i reached the line i want to read from
             int nLines = 0;
             
             List<String> linesRead = new ArrayList<>();
             String lastLineRead = null;
             while(true) {
+            	//Continue to read until i didn't reached the line i want to start read from
+            	
             	List<String> allLines = new ArrayList<>();
             	if(raf.read(buffer) != -1) {
             		allLines = ReaderUtils.convertBytesArrayToStringList(buffer);
                     if(allLines.size() == 0) {
-                    	return new ReadLinesResult();
+                    	return result;
                     }
                     
                     //-1 because I have to check if last line read has been terminated
@@ -50,26 +57,40 @@ public class FileReaderFromLine {
                     
                     String nextLine = allLines.get(0);
                     if(lastLineRead != null) {
-                    	if(lastLineRead.endsWith("\r\n") || lastLineRead.endsWith("\n")) {
+                    	/* If this is not the first iteration i've to check if the last line
+                    	 * I read in the previous iteration is terminated */
+                    	if(lastLineRead.endsWith("\n")) {
+                    		//The line I read in the previous iteration have a LF, it's terminated for sure
                     		nLines++;
                     	} else if(lastLineRead.endsWith("\r") && nextLine.equals("\n")) {
+                    		/*The line I read in hte previous iteration have a CR and the first line I read 
+                    		 * in the current iteration it a LF so the two line are a single line terminating with CRLF*/
                     		nLines++;
-                    		allLines.set(0, lastLineRead.concat(nextLine));
+                    		ListUtils.setFirstLine(allLines, lastLineRead.concat(nextLine));
                     	}
                     }
                     
                     if(nLines >= lineFromStartRead) {
-                    	int nLinesToReadAlreadyRead = nLines - lineFromStartRead;
-                    	linesRead = allLines.subList(allLines.size() - nLinesToReadAlreadyRead, allLines.size());
+                    	//I've reached the line i want to read from
+                    	
+                    	//+1 because i never count the last line because i've to check if it's really finished
+                    	int nLinesToReadAlreadyRead = nLines + 1 - lineFromStartRead;
+                    	
+                    	linesRead = allLines.subList(nLines - nLinesToReadAlreadyRead, allLines.size());
                     	break;
                     }
                     
-                    lastLineRead = allLines.get(allLines.size() - 1);
+                    lastLineRead = ListUtils.getLastLine(allLines);
                     
-                    //Free space in memory
                     if(allLines.size() > 1) {
+                    	//Free space in memory
                     	allLines = new ArrayList<>();
                     	allLines.add(lastLineRead);
+                    }
+                    
+                    if(raf.getFilePointer() == fileLength) {
+                    	//EOF reached and line where I want to start read from has not been reached
+                    	return result;
                     }
             	} else {
             		return result;
@@ -79,22 +100,22 @@ public class FileReaderFromLine {
             //It's needed to know if the last line read is terminated
             int extraChars = 1;
             int lengthOfLinesAlreadyRead = ReaderUtils.getStringLengthFromList(linesRead);
+            /* Here i create a buffer to read content from file to match the BUFFER_SIZE, if i've jumped 10 lines,
+             * I'll read the bytes needed to fill the ignored lines ad the begininng */
             buffer = new byte[BUFFER_SIZE - lengthOfLinesAlreadyRead + extraChars];
             if(raf.read(buffer) != -1) {
             	List<String> remainingLines = ReaderUtils.convertBytesArrayToStringList(buffer);
-            	linesRead.addAll(remainingLines);
-            	result.pointer = raf.getFilePointer();
+            	linesRead = ReaderUtils.concatList(linesRead, remainingLines);
+            	result.pointer = raf.getFilePointer() - extraChars;
             	result.linesRead = linesRead;
-            	String lastLine = remainingLines.get(remainingLines.size() - 1);
             	
-            	if(lastLine.length() >= 2) {
-            		if(lastLine.charAt(lastLine.length() - 2) == '\r' &&
-            				lastLine.charAt(lastLine.length() - 1) == '\n') {
-            			result.isFirstLineFull = false;
-            		}
-            		linesRead.set(linesRead.size() - 1, lastLine.substring(0, lastLine.length() - 2));
+            	if(!ReaderUtils.isLastLineTerminated(linesRead, extraChars)) {
+            		String lastLine = ListUtils.getLastLine(linesRead);
+            		ListUtils.setLastLine(linesRead, lastLine.substring(0, lastLine.length() - extraChars));
+            		result.isLastLineFull = false;
             	} else {
-            		linesRead.remove(linesRead.size() - 1);
+            		//If last line is terminated i know that the last line in the list is composed only by extra chars
+            		ListUtils.removeLastLine(linesRead);
             	}
             	
             	return result;
@@ -105,4 +126,5 @@ public class FileReaderFromLine {
             }
         }
     }
+	
 }

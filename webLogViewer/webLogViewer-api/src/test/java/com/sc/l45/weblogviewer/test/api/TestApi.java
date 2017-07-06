@@ -64,18 +64,6 @@ public class TestApi extends TestApiAbstract {
 	    return TestApiHelper.createResponse(responseType, request.get());
 	}
 
-	public String getTextFromLine(String filePath, String pointer, String isTotRowsToGet) {
-        return getTextFromLine(filePath, pointer, isTotRowsToGet, null, null);
-    }
-    
-    public String getTextFromLine(String filePath, String pointer, String isTotRowsToGet, EntityTag eTag) {
-        return getTextFromLine(filePath, pointer, isTotRowsToGet, null, eTag);
-    }
-    
-    public <T> T getTextFromLine(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType) {
-        return getTextFromLine(filePath, pointer, isTotRowsToGet, responseType, null);
-    }
-
     public <T> T getTextFromLine(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
         responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
         Builder request = TestApiHelper.setETag(client
@@ -115,18 +103,7 @@ public class TestApi extends TestApiAbstract {
         return TestApiHelper.createResponse(responseType, request.get());
     }
 	
-	public String getTextFromPointer(String filePath, String pointer, String isTotRowsToGet) {
-        return getTextFromPointer(filePath, pointer, isTotRowsToGet, null, null);
-    }
-    
-    public String getTextFromPointer(String filePath, String pointer, String isTotRowsToGet, EntityTag eTag) {
-        return getTextFromPointer(filePath, pointer, isTotRowsToGet, null, eTag);
-    }
-    
-    public <T> T getTextFromPointer(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType) {
-        return getTextFromPointer(filePath, pointer, isTotRowsToGet, responseType, null);
-    }
-
+	@Override
     public <T> T getTextFromPointer(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
         responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
         Builder request = TestApiHelper.setETag(client

@@ -10,7 +10,7 @@ public class FileContentResponseComplete extends FileContentResponse{
     
     @SuppressWarnings("unused")
     private FileContentResponseComplete() {
-        this(new ArrayList<String>(), "0", "0", FileConstants.ENCODING.toString(), "0", "0");
+        this(new ArrayList<>(), "0", "0", FileConstants.ENCODING.toString(), "0", "0");
     }
     
     public FileContentResponseComplete(List<String> readContent, String rowsRead, String size, String encoding, String currentPointer, String rowsInFile) {

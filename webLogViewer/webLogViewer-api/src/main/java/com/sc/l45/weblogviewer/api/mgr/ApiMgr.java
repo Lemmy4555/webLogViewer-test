@@ -20,6 +20,7 @@ import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
 import com.sc.l45.weblogviewer.api.mgr.readers.FileReaderFromEnd;
 import com.sc.l45.weblogviewer.api.mgr.readers.FileReaderFromLine;
+import com.sc.l45.weblogviewer.api.mgr.readers.FileReaderFromPointer;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
@@ -76,58 +77,13 @@ public class ApiMgr {
 
     public FileContentResponse getTextFromPointer(File file, int pointer, boolean isTotRowsToGet) throws IOException {
         Timer timer = new Timer();
-        FileContentResponse response = getTextFromPointerInner(file, pointer, isTotRowsToGet);
+        FileContentResponse response = FileReaderFromPointer.read(file, pointer, isTotRowsToGet);
         logRowsRead(response, file, timer);
         return response;
     }
 
     private void logRowsRead(FileContentResponse response, File file, Timer timer) {
         perfLogger.info("Lettura {} righe del file {} in {}", response.rowsRead, file.getAbsolutePath(), timer.time());
-    }
-
-    private FileContentResponse getTextFromPointerInner(File file, int pointer, boolean getLastRowReadNumber) throws IOException, FileNotFoundException {
-        if(pointer <= 0) {
-            return readFile(file);
-        }
-        try(RandomAccessFile raf = new RandomAccessFile(file, "r");) {
-            
-            int rowsRead = 0;
-            if(!getLastRowReadNumber) {
-                raf.seek(pointer);
-            } else {
-                raf.seek(0);
-            }
-            
-            try(FileInputStream fis = new FileInputStream(raf.getFD());
-                InputStreamReader is = new InputStreamReader(fis, FileConstants.ENCODING);
-                BufferedReaderLineSeparator bis = new BufferedReaderLineSeparator(is);) {
-                
-                String line;
-                List<String> readContent = new ArrayList<>();
-                while ((line = bis.readLine()) != null) {
-                    if(raf.getFilePointer() > pointer) {
-                        readContent.add(line);
-                    }
-                    rowsRead++;
-                }
-                
-                FileContentResponse response = null;
-                if(!getLastRowReadNumber) {
-                    response = new FileContentResponse(
-                            readContent, Integer.toString(readContent.size()), Long.toString(file.length()),
-                            FileConstants.ENCODING.name(),
-                            Long.toString(file.length())
-                        );
-                } else {
-                    response = new FileContentResponseComplete(
-                            readContent, Integer.toString(readContent.size()), Long.toString(file.length()),
-                            FileConstants.ENCODING.name(), Integer.toString(rowsRead),
-                            Long.toString(file.length())
-                        );
-                }
-                return response;
-            }
-        }
     }
 	
 }

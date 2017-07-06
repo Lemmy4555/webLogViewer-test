@@ -11,8 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
-import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
-import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
+import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class ReaderUtils {
 	static List<String> convertBytesArrayToStringList(byte[] buffer) {
@@ -58,28 +57,68 @@ public class ReaderUtils {
         }
     }
 	
-	static FileContentResponse createFileContentResponse(ReadLinesResult readLinesResult, long fileLength, Integer rowsInFile) {
-    	FileContentResponse response;
-    	
-    	int size = readLinesResult.linesRead.size();
-    	if(!readLinesResult.isFirstLineFull) {
-    		size--;
-    	}
+	public static List<String> concatList(List<String> list, List<String> toConcat) {	
+		List<String> result = new ArrayList<>();
 		
-    	if(rowsInFile != null) {
-    		response = new FileContentResponseComplete(
-    				readLinesResult.linesRead, Integer.toString(size), 
-    				Long.toString(fileLength), FileConstants.ENCODING.name(),
-    				Long.toString(readLinesResult.pointer),
-    				Integer.toString(rowsInFile)
-    				);
-    	} else {
-    		response = new FileContentResponse(
-    				readLinesResult.linesRead, Integer.toString(size), 
-    				Long.toString(fileLength), FileConstants.ENCODING.name(),
-    				Long.toString(readLinesResult.pointer)
-    				);
-    	}
-    	return response;
-    }
+		if(toConcat == null && list == null) {
+			return result;
+		}
+		if(list == null || list.size() == 0) {
+			return toConcat;
+		}
+		if(toConcat == null || toConcat.size() == 0) {
+			return list;
+		}
+		
+		List<String> toConcatInner = new ArrayList<>();
+		toConcatInner.addAll(toConcat);
+		List<String> listInner = new ArrayList<>();
+		listInner.addAll(list);
+		
+		String lastLineList = ListUtils.getLastLine(listInner);
+		String firstLineToConcat = ListUtils.getFirstLine(toConcatInner);
+		if(lastLineList.endsWith("\r")) {
+			if(firstLineToConcat.equals("\n")) {
+				ListUtils.removeFirstLine(toConcatInner);
+				lastLineList = lastLineList.concat(firstLineToConcat);
+				ListUtils.setLastLine(listInner, lastLineList);
+			}
+		} else if(!lastLineList.endsWith("\n")) {
+			ListUtils.removeFirstLine(toConcatInner);
+			lastLineList = lastLineList.concat(firstLineToConcat);
+			ListUtils.setLastLine(listInner, lastLineList);
+		}
+		
+		result.addAll(listInner);
+		result.addAll(toConcatInner);
+		
+		return result;
+	}
+	
+	/**
+	 * Method to check if the last line of a list is terminated using extra chars to check it
+	 * @param list List to check
+	 * @param extraChars number of extra chars used
+	 * @return true is last line is terminated otherwise false
+	 */
+	public static boolean isLastLineTerminated(List<String> list, int extraChars) {
+		String lastLine = ListUtils.getLastLine(list);
+		
+		if(lastLine.length() == extraChars) {
+			/* The last line has the same n of characters of the extra chars read, 
+			 * so if i exclude the last line from the list, I'm sure that the last line
+			 * is terminated */
+			return true;
+		}
+		
+		return false;
+	}
+
+	public static boolean isFirstLineTerminated(List<String> allLines) {
+		if(allLines.size() > 1) {
+			return true;
+		}
+		
+		return false;
+	}
 }

@@ -20,19 +20,28 @@ import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
  * Classe creata per via della necessita di dover utilizzare due classi diverse per leggere un file in input a seconda
  * dei dati in input per migliorare le performance.
  */
-public class FileReaderFromEnd {
+public class FileReaderFromEnd extends FileReaderAbstract{
    
-    public static FileContentResponse read(File file, int maxRowsToRead, long pointer, boolean isTotRowsToGet) throws IOException {
-    	long fileLength = file.length();
+    static public FileContentResponse read(File file, int maxRowsToRead, long pointer, boolean isTotRowsToGet) throws IOException {
+	    long fileLength = file.length();
+	    
+        if(pointer < 0) {
+        	pointer = 0;
+        }
+        
+        if(pointer > fileLength) {
+        	pointer = fileLength;
+        }
+        
     	Integer rowsInFile = null;
         if(isTotRowsToGet) {
             rowsInFile = ReaderUtils.countLinesInFile(file);
         }
         
         if(maxRowsToRead <= 0 || pointer <= 0) {
-            return ReaderUtils.createFileContentResponse(new ReadLinesResult(), fileLength, rowsInFile);
+            return createFileContentResponse(new ReadLinesResult(), fileLength, rowsInFile);
         }
-        return ReaderUtils.createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
+        return createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
     }
     
     private static ReadLinesResult readRawTextReverse(File file, int maxRowsToRead, long pointer, long fileLength) throws IOException {
@@ -80,7 +89,8 @@ public class FileReaderFromEnd {
                 } else {
                 	int linesReadOverLimit = allLines.size() - maxRowsToRead;
                 	ReadLinesResult result = new ReadLinesResult();
-                	result.pointer = newPointer;
+                	result.pointer = newPointer - extraChars;
+                	
                 	if(linesReadOverLimit > 0) {
             			result.linesRead = allLines.subList(linesReadOverLimit, allLines.size());
             			return result;

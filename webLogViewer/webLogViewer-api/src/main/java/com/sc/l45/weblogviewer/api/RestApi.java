@@ -100,16 +100,17 @@ public class RestApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TAIL_TEXT)
     public Response getTailText(@QueryParam("filePath") String filePath, @QueryParam("maxRowsToRead") String maxRowsToRead, 
-            @QueryParam("isTotRowsToGet") boolean isTotRowsToGet, @QueryParam("pointer") long pointer,
+            @QueryParam("isTotRowsToGet") String isTotRowsToGet, @QueryParam("pointer") String pointer,
             @Context Request request, @Context UriInfo ui) {
         Response response = new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private int maxRowsToReadInner;
             private File file = new File(filePath);
             private long pointerInner;
+            private boolean isTotRowsToGetInner;
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isTotRowsToGet);
+                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isTotRowsToGetInner);
             }
 
             @Override
@@ -122,11 +123,21 @@ public class RestApi {
                     maxRowsToReadInner = Integer.parseInt(maxRowsToRead);
                 }
                 
-                if(pointer < 0) {
+                if(pointer == null || pointer.equals("")) {
                 	pointerInner = 0;
                 } else {
-                	pointerInner = pointer;
+                	pointerInner = Long.parseLong(pointer);
                 }
+                
+                if(pointerInner < 0) {
+                	pointerInner = 0;
+                }
+                
+                if(isTotRowsToGet == null || isTotRowsToGet.equals("")) {
+            		isTotRowsToGetInner = false;
+            	} else {
+            		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            	}
             }
             
             @Override
