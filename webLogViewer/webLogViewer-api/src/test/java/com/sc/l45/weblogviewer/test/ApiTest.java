@@ -115,7 +115,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "400000";
-        response = api(baseUrl).getTextFromLine(filePath, fromLine, "false", FileContentResponseComplete.class);
+        response = new TestApiMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, response.rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -123,7 +123,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "310000";
-        response = api(baseUrl).getTextFromLine(filePath, fromLine, "false", FileContentResponseComplete.class);
+        response = new TestApiMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, response.rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());

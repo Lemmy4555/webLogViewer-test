@@ -79,7 +79,7 @@ public class FileReaderFromPointer extends FileReaderAbstract{
                 	
                 	ReadLinesResult result = new ReadLinesResult();
                 	
-                	long newPointer = pointer + BUFFER_SIZE - extraChars;
+                	long newPointer = raf.getFilePointer() - extraChars;
                 	result.pointer = newPointer;
                 	if(linesReadOverLimit > 0) {
                 		//TODO da testare

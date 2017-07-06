@@ -12,7 +12,7 @@ import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class FileReaderFromLine extends FileReaderAbstract{
     static public FileContentResponse read(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
-    	long fileLength = file.length();
+     	long fileLength = file.length();
     	
         if(lineFromStartRead < 0) {
             lineFromStartRead = 0;
@@ -65,7 +65,6 @@ public class FileReaderFromLine extends FileReaderAbstract{
                     	} else if(lastLineRead.endsWith("\r") && nextLine.equals("\n")) {
                     		/*The line I read in hte previous iteration have a CR and the first line I read 
                     		 * in the current iteration it a LF so the two line are a single line terminating with CRLF*/
-                    		nLines++;
                     		ListUtils.setFirstLine(allLines, lastLineRead.concat(nextLine));
                     	}
                     }
@@ -76,7 +75,7 @@ public class FileReaderFromLine extends FileReaderAbstract{
                     	//+1 because i never count the last line because i've to check if it's really finished
                     	int nLinesToReadAlreadyRead = nLines + 1 - lineFromStartRead;
                     	
-                    	linesRead = allLines.subList(nLines - nLinesToReadAlreadyRead, allLines.size());
+                    	linesRead = allLines.subList(allLines.size() - nLinesToReadAlreadyRead - 1, allLines.size());
                     	break;
                     }
                     

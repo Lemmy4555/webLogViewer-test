@@ -6,6 +6,7 @@ import java.util.List;
 import com.sc.l45.weblogviewer.api.mgr.readers.ReaderUtils;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
+import com.sc.l45.weblogviewer.api.responses.utils.FileContentResponseUtils;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class TestApiMgr {
@@ -91,7 +92,7 @@ public class TestApiMgr {
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
 		Integer fromLineInt = Integer.parseInt(fromLine);
 		Integer newPointer = Integer.parseInt(response.currentPointer);
-		Integer rowsToRead = rowsInFile - rowsRead;
+		Integer rowsToRead = rowsInFile - rowsRead - fromLineInt;
 		
 		if(fromLineInt > rowsInFile) {
 			return response;
