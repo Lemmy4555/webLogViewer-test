@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
+import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 /**
  * Classe creata per via della necessita di dover utilizzare due classi diverse per leggere un file in input a seconda
@@ -44,34 +45,29 @@ public class FileReaderFromEnd extends FileReaderAbstract{
         return createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
     }
     
-    private static ReadLinesResult readRawTextReverse(File file, int maxRowsToRead, long pointer, long fileLength) throws IOException {
+    private static ReadLinesResult readRawTextReverse(File file, Integer maxRowsToRead, long pointer, long fileLength) throws IOException {
+    	ReadLinesResult result = new ReadLinesResult();
     	int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;
         
         List<String> allLines = new ArrayList<>();
         
-        if(pointer > fileLength) {
-        	pointer = fileLength;
-        }
-        
         int extraChars = ReaderConstants.EXTRA_CHARS;
         
-        long newPointer = pointer - BUFFER_SIZE;
-        if(newPointer <= 0) {
-        	BUFFER_SIZE = (int)( (long)(BUFFER_SIZE) + newPointer);
-        	//In this case i'll not read extrachars because start of file has been reached.
-        	extraChars = 0;
-        	newPointer = 0;
-        } else if(newPointer == 1) {
-        	//TODO this case could be handled better to reduce api calls by one.
-        	//If only one chars remains to read i can read only 1 extra char.
-        	extraChars = 1;
-        	newPointer = 0;
-        } else {
-        	newPointer -= extraChars;
+        if(pointer == 0) {
+        	return result;
         }
+        
+        
+        if(pointer - BUFFER_SIZE <= 0) {
+        	BUFFER_SIZE += pointer - BUFFER_SIZE;
+        	extraChars = 0;
+        }
+        
+        long newPointer = pointer - BUFFER_SIZE;
         
         byte[] buffer = new byte[BUFFER_SIZE + extraChars];
     	
+        result.pointer = newPointer;
         try(RandomAccessFile raf = new RandomAccessFile(file, "r");) {
             raf.seek(newPointer);
             
@@ -87,29 +83,33 @@ public class FileReaderFromEnd extends FileReaderAbstract{
                 if(allLines.size() == 0) {
                 	return new ReadLinesResult();
                 } else {
-                	int linesReadOverLimit = allLines.size() - maxRowsToRead;
-                	ReadLinesResult result = new ReadLinesResult();
-                	result.pointer = newPointer - extraChars;
+                	int linesReadOverLimit;
+                	
+                	if(maxRowsToRead == null) {
+                		linesReadOverLimit = 0;
+                	} else {
+                		linesReadOverLimit = allLines.size() - maxRowsToRead;
+                	}
                 	
                 	if(linesReadOverLimit > 0) {
             			result.linesRead = allLines.subList(linesReadOverLimit, allLines.size());
             			return result;
                 	} else {
-                		//I've to remove the extra chars read to identify line termination
-                		String firstLine = allLines.get(0);
-                		if(firstLine.length() > extraChars) {
-                			allLines.set(0, firstLine.substring(extraChars, firstLine.length()));
-                			if(newPointer > 0) {
-                				result.isFirstLineFull = false;
-                			}
-                		} else if(firstLine.length() == extraChars) {
-                			allLines.remove(0);
-                		} else {
-                			allLines.remove(0);
-                			firstLine = allLines.get(0);
-                			allLines.set(0, firstLine.substring(1, firstLine.length()));
-                			result.isFirstLineFull = false;
+                		
+                		if(!ReaderUtils.isLastLineTerminatedReverse(allLines)) {
+                			result.isLastLineFull = false;
                 		}
+                		
+                		if(extraChars == 0) {
+                			result.isFirstLineFull = true;
+                		} else if (!ReaderUtils.isFirstLineTerminatedReverse(allLines, extraChars)) {
+                			String firstLine = ListUtils.getFirstLine(allLines);
+                    		ListUtils.setFirstLine(allLines, firstLine.substring(0 + extraChars, firstLine.length()));
+                    		result.isFirstLineFull = false;
+                    	} else {
+                    		//If last line is terminated i know that the last line in the list is composed only by extra chars
+                    		ListUtils.removeFirstLine(allLines);
+                    	}
                 		
                 		result.linesRead = allLines;
                 		return result;

@@ -14,8 +14,8 @@ public class FileReaderFromLine extends FileReaderAbstract{
     static public FileContentResponse read(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
      	long fileLength = file.length();
     	
-        if(lineFromStartRead < 0) {
-            lineFromStartRead = 0;
+        if(lineFromStartRead <= 0) {
+            lineFromStartRead = 1;
         }
         
         Integer rowsInFile = null;
@@ -97,8 +97,14 @@ public class FileReaderFromLine extends FileReaderAbstract{
             }
             
             //It's needed to know if the last line read is terminated
-            int extraChars = 1;
+            int extraChars = ReaderConstants.EXTRA_CHARS;
             int lengthOfLinesAlreadyRead = ReaderUtils.getStringLengthFromList(linesRead);
+                       
+            if(raf.getFilePointer() + BUFFER_SIZE > fileLength) {
+            	BUFFER_SIZE -= fileLength - raf.getFilePointer();
+            	extraChars = 0;
+            }
+            
             /* Here i create a buffer to read content from file to match the BUFFER_SIZE, if i've jumped 10 lines,
              * I'll read the bytes needed to fill the ignored lines ad the begininng */
             buffer = new byte[BUFFER_SIZE - lengthOfLinesAlreadyRead + extraChars];
@@ -107,6 +113,10 @@ public class FileReaderFromLine extends FileReaderAbstract{
             	linesRead = ReaderUtils.concatList(linesRead, remainingLines);
             	result.pointer = raf.getFilePointer() - extraChars;
             	result.linesRead = linesRead;
+            	
+            	if(!ReaderUtils.isFirstLineTerminated(linesRead)) {
+            		result.isFirstLineFull = false;
+            	}
             	
             	if(!ReaderUtils.isLastLineTerminated(linesRead, extraChars)) {
             		String lastLine = ListUtils.getLastLine(linesRead);

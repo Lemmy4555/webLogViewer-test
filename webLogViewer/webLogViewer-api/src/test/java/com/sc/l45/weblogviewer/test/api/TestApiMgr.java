@@ -21,21 +21,24 @@ public class TestApiMgr {
 
 	public FileContentResponseComplete getTailText(String filePath, String rowsfromEnd, String pointer, String isTotRowsToGet) {
 		FileContentResponseComplete response = testApi.getTailText(filePath, rowsfromEnd, pointer, isTotRowsToGet, FileContentResponseComplete.class);
-		
+
+		Integer rowsfromEndInt = Integer.parseInt(rowsfromEnd);
 		Integer rowsInFile = Integer.parseInt(response.rowsInFile);
+		
+		if(rowsfromEndInt > rowsInFile) {
+			rowsfromEndInt = rowsInFile;
+		}
+
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
-		Integer rowsToRead = Integer.parseInt(rowsfromEnd) - rowsRead;
+		Integer rowsToRead = rowsfromEndInt - rowsRead;
 		Integer newPointer = Integer.parseInt(response.currentPointer);
 		
-		if(rowsToRead > rowsInFile) {
-			rowsToRead = rowsInFile;
-		}
 
 		if(rowsToRead > 0) {
 			while(true) {
 				FileContentResponse responsePart = testApi.getTailText(filePath, rowsToRead.toString(), newPointer.toString(), "false", FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
-				newPointer -= Integer.parseInt(responsePart.currentPointer);;
+				newPointer = Integer.parseInt(responsePart.currentPointer);;
 				concatFileReponseAtBeginning(response, responsePart);
 				rowsToRead -= rowsRead;
 				if(rowsToRead <= 0) {
@@ -90,9 +93,17 @@ public class TestApiMgr {
 		
 		Integer rowsInFile = Integer.parseInt(response.rowsInFile);
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
+		
+		if(rowsRead > 0) {
+			//The first line read is extra
+			rowsRead--;
+			response.rowsRead = rowsRead.toString();
+		}
+		
 		Integer fromLineInt = Integer.parseInt(fromLine);
 		Integer newPointer = Integer.parseInt(response.currentPointer);
 		Integer rowsToRead = rowsInFile - rowsRead - fromLineInt;
+		
 		
 		if(fromLineInt > rowsInFile) {
 			return response;

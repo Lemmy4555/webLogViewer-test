@@ -36,20 +36,20 @@ public class FileReaderFromPointer extends FileReaderAbstract{
     }
 	
 	private static ReadLinesResult readFileWithBufferedReader(File file, Integer maxRowsToRead, long pointer, long fileLength) throws IOException, FileNotFoundException {
+		ReadLinesResult result = new ReadLinesResult();
 		int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;
         
         List<String> allLines = new ArrayList<>();
         
-        int extraChars = 1;
+        int extraChars = ReaderConstants.EXTRA_CHARS;
         
         if(pointer == fileLength) {
-        	return new ReadLinesResult();
-        } else if(pointer + BUFFER_SIZE > fileLength) {
+        	return result;
+        }
+        
+        if(pointer + BUFFER_SIZE > fileLength) {
         	BUFFER_SIZE -= fileLength - pointer;
         	extraChars = 0;
-        } else if(pointer + BUFFER_SIZE > fileLength - 1) {
-        	BUFFER_SIZE -= fileLength - pointer;
-        	extraChars = 1;
         }
         
         byte[] buffer = new byte[BUFFER_SIZE + extraChars];
@@ -77,13 +77,10 @@ public class FileReaderFromPointer extends FileReaderAbstract{
                 		linesReadOverLimit = allLines.size() - maxRowsToRead;
                 	}
                 	
-                	ReadLinesResult result = new ReadLinesResult();
-                	
                 	long newPointer = raf.getFilePointer() - extraChars;
                 	result.pointer = newPointer;
                 	if(linesReadOverLimit > 0) {
-                		//TODO da testare
-            			result.linesRead = allLines.subList(linesReadOverLimit, allLines.size());
+            			result.linesRead = allLines.subList(0, allLines.size() - linesReadOverLimit);
             			return result;
                 	} else {
                 		
@@ -91,7 +88,9 @@ public class FileReaderFromPointer extends FileReaderAbstract{
                 			result.isFirstLineFull = false;
                 		}
                 		
-                		if(!ReaderUtils.isLastLineTerminated(allLines, extraChars)) {
+                		if(extraChars == 0) {
+                			result.isLastLineFull = true;
+                		} else if (!ReaderUtils.isLastLineTerminated(allLines, extraChars)) {
                     		String lastLine = ListUtils.getLastLine(allLines);
                     		ListUtils.setLastLine(allLines, lastLine.substring(0, lastLine.length() - extraChars));
                     		result.isLastLineFull = false;

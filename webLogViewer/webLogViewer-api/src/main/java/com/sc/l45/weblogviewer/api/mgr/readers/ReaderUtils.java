@@ -101,8 +101,8 @@ public class ReaderUtils {
 	 * @param extraChars number of extra chars used
 	 * @return true is last line is terminated otherwise false
 	 */
-	public static boolean isLastLineTerminated(List<String> list, int extraChars) {
-		String lastLine = ListUtils.getLastLine(list);
+	public static boolean isLastLineTerminated(List<String> allLines, int extraChars) {
+		String lastLine = ListUtils.getLastLine(allLines);
 		
 		if(lastLine.length() == extraChars) {
 			/* The last line has the same n of characters of the extra chars read, 
@@ -115,6 +115,27 @@ public class ReaderUtils {
 	}
 
 	public static boolean isFirstLineTerminated(List<String> allLines) {
+		if(allLines.size() > 1) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean isFirstLineTerminatedReverse(List<String> allLines, int extraChars) {
+		String firstLine = ListUtils.getLastLine(allLines);
+
+		if(firstLine.length() == extraChars) {
+			/* The first line has the same n of characters of the extra chars read, 
+			 * so if i exclude the last line from the list, I'm sure that the last line
+			 * is terminated */
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean isLastLineTerminatedReverse(List<String> allLines) {
 		if(allLines.size() > 1) {
 			return true;
 		}

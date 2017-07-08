@@ -50,21 +50,21 @@ public class ApiTest extends ApiTestConf {
     @RunAsClient
     public void getTailText(@ArquillianResource URL baseUrl) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
         Timer timer = new Timer();
-        String rowsToReadFromEnd = "10";
+        String rowsToReadFromEnd = "400000";
         
         String filePath = testFile.getAbsolutePath();
         FileContentResponseComplete response = new TestApiMgr(api(baseUrl)).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
-        logger.info("Lette {} righe dal file {} in: {}", response.rowsRead, testFile.getAbsolutePath(), timer.time());
+        logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, response.rowsInFile, testFile.getAbsolutePath(), timer.time());
         
         timer.reset();
         
-        rowsToReadFromEnd = "400000";
+        rowsToReadFromEnd = "10";
         response =  new TestApiMgr(api(baseUrl)).getTailText(filePath, rowsToReadFromEnd, Long.toString(testFile.length()), "true");
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
-        logger.info("Lette {} righe dal file {} in: {}", response.rowsRead, testFile.getAbsolutePath(), timer.time());
+        logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, response.rowsInFile, testFile.getAbsolutePath(), timer.time());
     }
     
     @Test
