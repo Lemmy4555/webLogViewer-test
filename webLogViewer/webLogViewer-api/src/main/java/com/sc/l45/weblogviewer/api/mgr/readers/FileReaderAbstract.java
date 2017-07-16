@@ -35,4 +35,24 @@ public abstract class FileReaderAbstract {
     	}
     	return response;
     }
+	
+	static void removeExceedingLines(ReadLinesResult result, Integer maxLinesToRead) {
+		if(maxLinesToRead != null) {
+			if(result.linesRead.size() < maxLinesToRead) {
+				maxLinesToRead = result.linesRead.size();
+			}
+			result.linesRead = result.linesRead.subList(0, maxLinesToRead);
+			result.isLastLineFull = true;
+		}
+	}
+	
+	static void removeExceedingLinesReverse(ReadLinesResult result, Integer maxLinesToRead) {
+		if(maxLinesToRead != null) {
+			if(result.linesRead.size() < maxLinesToRead) {
+				maxLinesToRead = result.linesRead.size();
+			}
+			result.linesRead = result.linesRead.subList(result.linesRead.size() - maxLinesToRead, result.linesRead.size());
+			result.isFirstLineFull = true;
+		}
+	}
 }

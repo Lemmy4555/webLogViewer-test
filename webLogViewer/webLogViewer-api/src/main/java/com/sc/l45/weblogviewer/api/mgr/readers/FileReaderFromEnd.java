@@ -1,20 +1,13 @@
 package com.sc.l45.weblogviewer.api.mgr.readers;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
-import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 /**
@@ -42,10 +35,14 @@ public class FileReaderFromEnd extends FileReaderAbstract{
         if(maxRowsToRead <= 0 || pointer <= 0) {
             return createFileContentResponse(new ReadLinesResult(), fileLength, rowsInFile);
         }
-        return createFileContentResponse(readRawTextReverse(file, maxRowsToRead, pointer, fileLength), fileLength, rowsInFile);
+        
+        ReadLinesResult result = readFileWithBufferedReaderReverse(file, maxRowsToRead, pointer, fileLength);
+        removeExceedingLinesReverse(result, maxRowsToRead);
+        
+        return createFileContentResponse(result, fileLength, rowsInFile);
     }
     
-    private static ReadLinesResult readRawTextReverse(File file, Integer maxRowsToRead, long pointer, long fileLength) throws IOException {
+    private static ReadLinesResult readFileWithBufferedReaderReverse(File file, Integer maxRowsToRead, long pointer, long fileLength) throws IOException {
     	ReadLinesResult result = new ReadLinesResult();
     	int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;
         
@@ -83,37 +80,23 @@ public class FileReaderFromEnd extends FileReaderAbstract{
                 if(allLines.size() == 0) {
                 	return new ReadLinesResult();
                 } else {
-                	int linesReadOverLimit;
-                	
-                	if(maxRowsToRead == null) {
-                		linesReadOverLimit = 0;
+            		if(!ReaderUtils.isLastLineTerminatedReverse(allLines)) {
+            			result.isLastLineFull = false;
+            		}
+            		
+            		if(extraChars == 0) {
+            			result.isFirstLineFull = true;
+            		} else if (!ReaderUtils.isFirstLineTerminatedReverse(allLines, extraChars)) {
+            			String firstLine = ListUtils.getFirstLine(allLines);
+                		ListUtils.setFirstLine(allLines, firstLine.substring(0 + extraChars, firstLine.length()));
+                		result.isFirstLineFull = false;
                 	} else {
-                		linesReadOverLimit = allLines.size() - maxRowsToRead;
+                		//If last line is terminated i know that the last line in the list is composed only by extra chars
+                		ListUtils.removeFirstLine(allLines);
                 	}
-                	
-                	if(linesReadOverLimit > 0) {
-            			result.linesRead = allLines.subList(linesReadOverLimit, allLines.size());
-            			return result;
-                	} else {
-                		
-                		if(!ReaderUtils.isLastLineTerminatedReverse(allLines)) {
-                			result.isLastLineFull = false;
-                		}
-                		
-                		if(extraChars == 0) {
-                			result.isFirstLineFull = true;
-                		} else if (!ReaderUtils.isFirstLineTerminatedReverse(allLines, extraChars)) {
-                			String firstLine = ListUtils.getFirstLine(allLines);
-                    		ListUtils.setFirstLine(allLines, firstLine.substring(0 + extraChars, firstLine.length()));
-                    		result.isFirstLineFull = false;
-                    	} else {
-                    		//If last line is terminated i know that the last line in the list is composed only by extra chars
-                    		ListUtils.removeFirstLine(allLines);
-                    	}
-                		
-                		result.linesRead = allLines;
-                		return result;
-                	}
+            		
+            		result.linesRead = allLines;
+            		return result;
                 }
             }
             

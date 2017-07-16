@@ -103,14 +103,14 @@ public class RestApi {
             @QueryParam("isTotRowsToGet") String isTotRowsToGet, @QueryParam("pointer") String pointer,
             @Context Request request, @Context UriInfo ui) {
         Response response = new DefaultFileApiBehavior<FileContentResponse>(ui) {
-            private int maxRowsToReadInner;
+            private Integer maxRowsToReadInt;
             private File file = new File(filePath);
-            private long pointerInner;
+            private long pointerLong;
             private boolean isTotRowsToGetInner;
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTailText(file, maxRowsToReadInner, pointerInner, isTotRowsToGetInner);
+                return apiMgr.getTailText(file, maxRowsToReadInt, pointerLong, isTotRowsToGetInner);
             }
 
             @Override
@@ -118,19 +118,19 @@ public class RestApi {
                 fileMgr.checkFile(filePath);
                 
                 if (StringUtils.isEmpty(maxRowsToRead)) {
-                    maxRowsToReadInner = 4;
+                    maxRowsToReadInt = null;
                 } else {
-                    maxRowsToReadInner = Integer.parseInt(maxRowsToRead);
+                    maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
                 }
                 
-                if(pointer == null || pointer.equals("")) {
-                	pointerInner = 0;
+                if(StringUtils.isEmpty(pointer)) {
+                	pointerLong = 0;
                 } else {
-                	pointerInner = Long.parseLong(pointer);
+                	pointerLong = Long.parseLong(pointer);
                 }
                 
-                if(pointerInner < 0) {
-                	pointerInner = 0;
+                if(pointerLong < 0) {
+                	pointerLong = 0;
                 }
                 
                 if(isTotRowsToGet == null || isTotRowsToGet.equals("")) {
@@ -142,34 +142,55 @@ public class RestApi {
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-                return new CacheControlMgr(request, file, Integer.toString(maxRowsToReadInner));
+        		return new CacheControlMgr(request, file);
             }
         }.call();
         return response;
     }
-
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TEXT_FROM_LINE)
     public Response getTextFromLine(@QueryParam("filePath") String filePath, @QueryParam("lineFrom") String lineFrom, 
-    		@QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
+    		@QueryParam("maxRowsToRead") String maxRowsToRead, @QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
         return new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private File file = new File(filePath);
+            private int lineFromInt;
+            private Integer maxRowsToReadInt;
             
             @Override
             FileContentResponse api() throws IOException {
-                int lineFromInt = Integer.parseInt(lineFrom);
-                return apiMgr.getTextFromLine(file, lineFromInt, Boolean.parseBoolean(isTotRowsToGet));
+                return apiMgr.getTextFromLine(file, lineFromInt, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
             }
-
+            
             @Override
             void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
+
+                if (StringUtils.isEmpty(lineFrom)) {
+                	lineFromInt = 0;
+                } else {
+                	lineFromInt = Integer.parseInt(lineFrom);
+                }
+                
+                if(lineFromInt < 0) {
+                	lineFromInt = 0;
+                }
+                
+                if(StringUtils.isEmpty(maxRowsToRead)) {
+                	maxRowsToReadInt = null;
+                } else {
+                	maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
+                }
             }
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-                return new CacheControlMgr(request, file, lineFrom);
+            	if(maxRowsToReadInt != null) {
+            		return new CacheControlMgr(request, file, String.valueOf(lineFromInt), String.valueOf(maxRowsToReadInt));
+            	} else {
+            		return new CacheControlMgr(request, file, String.valueOf(lineFromInt));
+            	}
             }
         }.call();
     }
@@ -203,19 +224,36 @@ public class RestApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TEXT_FROM_POINTER)
     public Response getTextFromPointer(@QueryParam("filePath") String filePath, @QueryParam("pointer") String pointer,
-            @QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
+    		@QueryParam("maxRowsToRead") String maxRowsToRead, @QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
         return new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private File file = new File(filePath);
+            private long pointerLong;
+            private Integer maxRowsToReadInt;
             
             @Override
             FileContentResponse api() throws IOException {
-                int pointerInt = Integer.parseInt(pointer);
-                return apiMgr.getTextFromPointer(file, pointerInt, Boolean.parseBoolean(isTotRowsToGet));
+                return apiMgr.getTextFromPointer(file, pointerLong, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
             }
 
             @Override
             void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
+
+                if (StringUtils.isEmpty(pointer)) {
+                	pointerLong = 0;
+                } else {
+                	pointerLong = Long.parseLong(pointer);
+                }
+                
+                if(pointerLong < 0) {
+                	pointerLong = 0;
+                }
+                
+                if(StringUtils.isEmpty(maxRowsToRead)) {
+                	maxRowsToReadInt = null;
+                } else {
+                	maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
+                }
             }
             
             @Override
@@ -235,7 +273,7 @@ public class RestApi {
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromLine(file, 0, true);
+                return apiMgr.getTextFromLine(file, 0, null, true);
             }
 
             @Override

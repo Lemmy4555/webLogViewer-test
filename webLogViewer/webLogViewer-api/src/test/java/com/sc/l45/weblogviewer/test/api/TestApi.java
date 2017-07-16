@@ -21,22 +21,6 @@ public class TestApi extends TestApiAbstract {
 	    client = JerseyClientBuilder.newClient().target(baseUrl.toURI());
 	}
 	
-	public String sendRequest(Builder request) {
-        return sendRequest(request, null, null);
-    }
-	
-    public <T> T sendRequest(Builder request, Class<T> responseType) {
-        return sendRequest(request, responseType, null);
-    }
-    
-    public <T> T sendRequest(Builder request, EntityTag eTag) {
-        return sendRequest(request, null, eTag);
-    }
-    
-    public <T> T sendRequest(Builder request, Class<T> responseType, EntityTag eTag) {
-        return TestApiHelper.createResponse(responseType, TestApiHelper.setETag(request, eTag).get());
-    }
-	
 	public String getFileData(String filePath) {
 		return client
         .path("api/getFileData")
@@ -47,14 +31,14 @@ public class TestApi extends TestApiAbstract {
 	}
 	
 	@Override
-    public <T> T getTailText(String filePath, String rowsfromEnd, String pointer, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
+    public <T> T getTailText(String filePath, String pointer, String maxRowsToRead, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
 	    responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
 	    Builder request = TestApiHelper.setETag(
 	            client
                     .path("api/getTailText")
                     .queryParam("filePath", filePath)
-                    .queryParam("maxRowsToRead", rowsfromEnd)
                     .queryParam("pointer", pointer)
+                    .queryParam("maxRowsToRead", maxRowsToRead)
                     .queryParam("isTotRowsToGet", isTotRowsToGet)
                     .request(MediaType.APPLICATION_JSON),
                 eTag);
@@ -63,13 +47,15 @@ public class TestApi extends TestApiAbstract {
 	    }
 	    return TestApiHelper.createResponse(responseType, request.get());
 	}
-
-    public <T> T getTextFromLine(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
+	
+	@Override
+    public <T> T getTextFromLine(String filePath, String fromLine, String maxRowsToRead, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
         responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
         Builder request = TestApiHelper.setETag(client
                 .path("api/getTextFromLine")
                 .queryParam("filePath", filePath)
-                .queryParam("lineFrom", pointer)
+                .queryParam("lineFrom", fromLine)
+                .queryParam("maxRowsToRead", maxRowsToRead)
                 .queryParam("isTotRowsToGet", isTotRowsToGet)
                 .request(MediaType.APPLICATION_JSON),
             eTag);
@@ -78,18 +64,6 @@ public class TestApi extends TestApiAbstract {
         }
         return TestApiHelper.createResponse(responseType, request.get());
 	}
-    
-    public String getHomeDir() {
-        return getHomeDir(null, null);
-    }
-    
-    public String getHomeDir(EntityTag eTag) {
-        return getHomeDir(null, eTag);
-    }
-    
-    public <T> T getHomeDir(Class<T> responseType) {
-        return getHomeDir(responseType, null);
-    }
 	
 	public <T> T getHomeDir(Class<T> responseType, EntityTag eTag) {
 	    responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
@@ -104,12 +78,13 @@ public class TestApi extends TestApiAbstract {
     }
 	
 	@Override
-    public <T> T getTextFromPointer(String filePath, String pointer, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
+    public <T> T getTextFromPointer(String filePath, String pointer, String maxRowsToRead, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
         responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
         Builder request = TestApiHelper.setETag(client
                 .path("api/getTextFromPointer")
                 .queryParam("filePath", filePath)
                 .queryParam("pointer", pointer)
+                .queryParam("maxRowsToRead", maxRowsToRead)
                 .queryParam("isTotRowsToGet", isTotRowsToGet)
                 .request(MediaType.APPLICATION_JSON),
             eTag);
@@ -117,18 +92,6 @@ public class TestApi extends TestApiAbstract {
             return (T) request;
         }
         return TestApiHelper.createResponse(responseType, request.get());
-    }
-    
-    public String readFile(String filePath) {
-        return readFile(filePath, null, null);
-    }
-    
-    public String readFile(String filePath, EntityTag eTag) {
-        return readFile(filePath, null, eTag);
-    }
-    
-    public <T> T readFile(String filePath, Class<T> responseType) {
-        return readFile(filePath, responseType, null);
     }
 
     public <T> T readFile(String filePath, Class<T> responseType, EntityTag eTag) {
@@ -143,5 +106,21 @@ public class TestApi extends TestApiAbstract {
         }
         return TestApiHelper.createResponse(responseType, request.get());
     }
+
+	public <T> T getTextFromLineToLine(String filePath, String fromLine, String toLine, String isTotRowsToGet, Class<T> responseType, EntityTag eTag) {
+		responseType = (Class<T>) TestApiHelper.checkResponseType(responseType);
+        Builder request = TestApiHelper.setETag(client
+                .path("api/getTextFromLineToLine")
+                .queryParam("filePath", filePath)
+                .queryParam("lineFrom", fromLine)
+                .queryParam("lineTo", toLine)
+                .queryParam("isTotRowsToGet", isTotRowsToGet)
+                .request(MediaType.APPLICATION_JSON),
+            eTag);
+        if(responseType.equals(Builder.class)) {
+            return (T) request;
+        }
+        return TestApiHelper.createResponse(responseType, request.get());
+	}
 
 }

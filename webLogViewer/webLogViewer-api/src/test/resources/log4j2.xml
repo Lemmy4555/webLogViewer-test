@@ -18,23 +18,23 @@
 	
 	<Loggers>
 		<Logger name="com.sc.l45" level="trace">
-	  </Logger>
-	  
-	  <Logger name="performance" level="trace" additivity="false">
-	    <AppenderRef ref="Console-perf" />
-	  </Logger>
-	  
-	  <Logger name="api-calls" level="trace" additivity="false">
-      <AppenderRef ref="Console-api-calls" />
-    </Logger>
-    
-    <Logger name="junit-tests" level="trace" additivity="false">
-      <AppenderRef ref="Console-junit-tests" />
-    </Logger>
-	  
-    <Root level="warn">
-      <AppenderRef ref="Console"/>
-    </Root>
+		</Logger>
+
+		<Logger name="performance" level="error" additivity="false">
+		  <AppenderRef ref="Console-perf" />
+		</Logger>
+
+		<Logger name="api-calls" level="error" additivity="false">
+		  <AppenderRef ref="Console-api-calls" />
+		</Logger>
+
+		<Logger name="junit-tests" level="trace" additivity="false">
+		  <AppenderRef ref="Console-junit-tests" />
+		</Logger>
+
+		<Root level="warn">
+		  <AppenderRef ref="Console"/>
+		</Root>
   </Loggers>
 
 </Configuration>

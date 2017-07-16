@@ -11,7 +11,7 @@ import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class FileReaderFromLine extends FileReaderAbstract{
-    static public FileContentResponse read(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
+    static public FileContentResponse read(File file, int lineFromStartRead, Integer maxLinesToRead, boolean isTotRowsToGet) throws IOException {
      	long fileLength = file.length();
     	
         if(lineFromStartRead <= 0) {
@@ -23,9 +23,15 @@ public class FileReaderFromLine extends FileReaderAbstract{
             rowsInFile = ReaderUtils.countLinesInFile(file);
         }
         
-        return createFileContentResponse(readFileWithBufferedReader(file, lineFromStartRead, fileLength), fileLength, rowsInFile);
+        if(maxLinesToRead != null) {
+        	maxLinesToRead++;
+        }
+        
+        ReadLinesResult result = readFileWithBufferedReader(file, lineFromStartRead, fileLength);
+        removeExceedingLines(result, maxLinesToRead);
+        
+        return createFileContentResponse(result, fileLength, rowsInFile);
     }
- 
 
 	private static ReadLinesResult readFileWithBufferedReader(File file, int lineFromStartRead, long fileLength) throws IOException {
     	int BUFFER_SIZE = FileConstants.MAX_READABLE_TEXT_SIZE;
@@ -66,6 +72,8 @@ public class FileReaderFromLine extends FileReaderAbstract{
                     		/*The line I read in hte previous iteration have a CR and the first line I read 
                     		 * in the current iteration it a LF so the two line are a single line terminating with CRLF*/
                     		ListUtils.setFirstLine(allLines, lastLineRead.concat(nextLine));
+                    	} else if (raf.getFilePointer() == fileLength) {
+                    		nLines++;
                     	}
                     }
                     
@@ -74,6 +82,10 @@ public class FileReaderFromLine extends FileReaderAbstract{
                     	
                     	//+1 because i never count the last line because i've to check if it's really finished
                     	int nLinesToReadAlreadyRead = nLines + 1 - lineFromStartRead;
+                    	if(raf.getFilePointer() == fileLength) {
+                    		//Excepting for the last line
+                    		nLinesToReadAlreadyRead--;
+                    	}
                     	
                     	linesRead = allLines.subList(allLines.size() - nLinesToReadAlreadyRead - 1, allLines.size());
                     	break;
@@ -89,7 +101,14 @@ public class FileReaderFromLine extends FileReaderAbstract{
                     
                     if(raf.getFilePointer() == fileLength) {
                     	//EOF reached and line where I want to start read from has not been reached
+                    	result.pointer = raf.getFilePointer();
                     	return result;
+                    }
+                    
+                    if(raf.getFilePointer() + BUFFER_SIZE > fileLength) {
+                    	buffer = new byte[(int) ((Long.parseLong(Integer.toString(BUFFER_SIZE)) - (fileLength - raf.getFilePointer())))];
+                    } else {
+                    	buffer = new byte[BUFFER_SIZE];
                     }
             	} else {
             		return result;

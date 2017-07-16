@@ -1,12 +1,8 @@
 package com.sc.l45.weblogviewer.api.mgr;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +23,6 @@ import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.responses.FileListDataResponse;
 import com.sc.l45.weblogviewer.api.utils.FileUtils;
 import com.sc.l45.weblogviewer.api.utils.Timer;
-import com.sc.l45.weblogviewer.reader.BufferedReaderLineSeparator;
 
 public class ApiMgr {
 	private final static Logger logger = LoggerFactory.getLogger(ApiMgr.class);
@@ -55,9 +50,9 @@ public class ApiMgr {
         return response;
 	}
 	
-	public FileContentResponse getTextFromLine(File file, int lineFromStartRead, boolean isTotRowsToGet) throws IOException {
+	public FileContentResponse getTextFromLine(File file, int lineFromStartRead, Integer maxRowsToRead, boolean isTotRowsToGet) throws IOException {
 	    Timer timer = new Timer();
-	    FileContentResponse response = FileReaderFromLine.read(file, lineFromStartRead, isTotRowsToGet);
+	    FileContentResponse response = FileReaderFromLine.read(file, lineFromStartRead, maxRowsToRead, isTotRowsToGet);
 	    logRowsRead(response, file, timer);
 	    return response;
 	}
@@ -75,9 +70,9 @@ public class ApiMgr {
         return response;
     }
 
-    public FileContentResponse getTextFromPointer(File file, int pointer, boolean isTotRowsToGet) throws IOException {
+    public FileContentResponse getTextFromPointer(File file, long pointer, Integer maxRowsToRead, boolean isTotRowsToGet) throws IOException {
         Timer timer = new Timer();
-        FileContentResponse response = FileReaderFromPointer.read(file, pointer, isTotRowsToGet);
+        FileContentResponse response = FileReaderFromPointer.read(file, pointer, maxRowsToRead, isTotRowsToGet);
         logRowsRead(response, file, timer);
         return response;
     }
