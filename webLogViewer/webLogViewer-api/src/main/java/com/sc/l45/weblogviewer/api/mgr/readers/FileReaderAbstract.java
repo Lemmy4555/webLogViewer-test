@@ -49,7 +49,7 @@ public abstract class FileReaderAbstract {
 	static void removeExceedingLinesReverse(ReadLinesResult result, Integer maxLinesToRead) {
 		if(maxLinesToRead != null) {
 			if(result.linesRead.size() < maxLinesToRead) {
-				maxLinesToRead = result.linesRead.size();
+				return;
 			}
 			result.linesRead = result.linesRead.subList(result.linesRead.size() - maxLinesToRead, result.linesRead.size());
 			result.isFirstLineFull = true;

@@ -118,7 +118,7 @@ public class RestApi {
                 fileMgr.checkFile(filePath);
                 
                 if (StringUtils.isEmpty(maxRowsToRead)) {
-                    maxRowsToReadInt = null;
+                    maxRowsToReadInt = 0;
                 } else {
                     maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
                 }
@@ -151,30 +151,30 @@ public class RestApi {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.GET_TEXT_FROM_LINE)
-    public Response getTextFromLine(@QueryParam("filePath") String filePath, @QueryParam("lineFrom") String lineFrom, 
+    public Response getTextFromLine(@QueryParam("filePath") String filePath, @QueryParam("fromLine") String fromLine, 
     		@QueryParam("maxRowsToRead") String maxRowsToRead, @QueryParam("isTotRowsToGet") String isTotRowsToGet, @Context Request request, @Context UriInfo ui) {
         return new DefaultFileApiBehavior<FileContentResponse>(ui) {
             private File file = new File(filePath);
-            private int lineFromInt;
+            private int fromLineInt;
             private Integer maxRowsToReadInt;
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromLine(file, lineFromInt, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
+                return apiMgr.getTextFromLine(file, fromLineInt, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
             }
             
             @Override
             void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
 
-                if (StringUtils.isEmpty(lineFrom)) {
-                	lineFromInt = 0;
+                if (StringUtils.isEmpty(fromLine)) {
+                	fromLineInt = 0;
                 } else {
-                	lineFromInt = Integer.parseInt(lineFrom);
+                	fromLineInt = Integer.parseInt(fromLine);
                 }
                 
-                if(lineFromInt < 0) {
-                	lineFromInt = 0;
+                if(fromLineInt < 0) {
+                	fromLineInt = 0;
                 }
                 
                 if(StringUtils.isEmpty(maxRowsToRead)) {
@@ -187,9 +187,9 @@ public class RestApi {
             @Override
             CacheControlMgr cacheControl() throws Exception {
             	if(maxRowsToReadInt != null) {
-            		return new CacheControlMgr(request, file, String.valueOf(lineFromInt), String.valueOf(maxRowsToReadInt));
+            		return new CacheControlMgr(request, file, String.valueOf(fromLineInt), String.valueOf(maxRowsToReadInt));
             	} else {
-            		return new CacheControlMgr(request, file, String.valueOf(lineFromInt));
+            		return new CacheControlMgr(request, file, String.valueOf(fromLineInt));
             	}
             }
         }.call();

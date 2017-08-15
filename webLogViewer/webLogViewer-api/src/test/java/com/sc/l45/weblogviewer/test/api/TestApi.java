@@ -54,7 +54,7 @@ public class TestApi extends TestApiAbstract {
         Builder request = TestApiHelper.setETag(client
                 .path("api/getTextFromLine")
                 .queryParam("filePath", filePath)
-                .queryParam("lineFrom", fromLine)
+                .queryParam("fromLine", fromLine)
                 .queryParam("maxRowsToRead", maxRowsToRead)
                 .queryParam("isTotRowsToGet", isTotRowsToGet)
                 .request(MediaType.APPLICATION_JSON),
@@ -112,7 +112,7 @@ public class TestApi extends TestApiAbstract {
         Builder request = TestApiHelper.setETag(client
                 .path("api/getTextFromLineToLine")
                 .queryParam("filePath", filePath)
-                .queryParam("lineFrom", fromLine)
+                .queryParam("fromLine", fromLine)
                 .queryParam("lineTo", toLine)
                 .queryParam("isTotRowsToGet", isTotRowsToGet)
                 .request(MediaType.APPLICATION_JSON),

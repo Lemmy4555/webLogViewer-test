@@ -10,6 +10,8 @@ import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class TestApiMgr {
 	private TestApi testApi;
+	private static final String isTotRowsToGetFirstCall = "true";
+	private static final String isTotRowsToGetNextCalls = "false";
 	
 	public TestApiMgr(TestApi testApi) {
 		if(testApi == null) {
@@ -18,12 +20,14 @@ public class TestApiMgr {
 		this.testApi = testApi;
 	}
 
-	public FileContentResponseComplete getTailText(String filePath, String pointer, String maxRowsToRead, String isTotRowsToGet) {
-		FileContentResponseComplete response = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToGet, FileContentResponseComplete.class);
+	public FileContentResponseComplete getTailText(String filePath, String pointer, String maxRowsToRead) {
+		/*  isTotRowsToGet is set tu true for the first call because i'm not sure that i will read all the desired content in one time
+		 *  but probably I'll get only a chunk of the content and i have to calculate the remaining to read */
+		FileContentResponseComplete response = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToGetFirstCall, FileContentResponseComplete.class);
 		
 		Integer rowsfromEndInt;
 		if(maxRowsToRead == null) {
-			rowsfromEndInt = null;
+			rowsfromEndInt = 0;
 		} else {
 			rowsfromEndInt = Integer.parseInt(maxRowsToRead);
 		}
@@ -41,7 +45,7 @@ public class TestApiMgr {
 
 		if(rowsToRead > 0) {
 			while(true) {
-				FileContentResponse responsePart = testApi.getTailText(filePath, newPointer.toString(), rowsToRead.toString(), "false", FileContentResponse.class);
+				FileContentResponse responsePart = testApi.getTailText(filePath, newPointer.toString(), rowsToRead.toString(), isTotRowsToGetNextCalls, FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Integer.parseInt(responsePart.currentPointer);;
 				concatFileReponseAtBeginning(response, responsePart);
@@ -55,8 +59,10 @@ public class TestApiMgr {
 		return response;
 	}
 	
-	public FileContentResponseComplete getTextFromLine(String filePath, String fromLine, String maxRowsToRead, String isTotRowsToGet) {
-		FileContentResponseComplete response = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToGet, FileContentResponseComplete.class);
+	public FileContentResponseComplete getTextFromLine(String filePath, String fromLine, String maxRowsToRead) {
+		/*  isTotRowsToGet is set tu true for the first call because i'm not sure that i will read all the desired content in one time
+		 *  but probably I'll get only a chunk of the content and i have to calculate the remaining to read */
+		FileContentResponseComplete response = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToGetFirstCall, FileContentResponseComplete.class);
 		
 		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
@@ -67,7 +73,12 @@ public class TestApiMgr {
 		
 		Integer rowsInFile = Integer.parseInt(response.rowsInFile);
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
-		Integer fromLineInt = Integer.parseInt(fromLine);
+		Integer fromLineInt;
+		if(fromLine == null) {
+			fromLineInt = new Integer(0);
+		} else {
+			fromLineInt = Integer.parseInt(fromLine);
+		}
 		
 		if(rowsRead > 0 && !rowsInFile.equals(fromLineInt)) {
 			//The first line read is extra
@@ -92,12 +103,62 @@ public class TestApiMgr {
 
 		if(rowsToRead > 0) {
 			while(true) {
-				FileContentResponse responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), String.valueOf(rowsToRead), "false", FileContentResponse.class);
+				FileContentResponse responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), String.valueOf(rowsToRead), isTotRowsToGetNextCalls, FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Integer.parseInt(responsePart.currentPointer);
 				concatFileReponseAtTheEnd(response, responsePart);
 				rowsToRead -= rowsRead;
 				if(rowsToRead <= 0) {
+					break;
+				}
+			}
+		}
+		
+		return response;
+	}
+
+	public FileContentResponse getTextFromPointer(String filePath, String pointer, String maxRowsToRead) {
+		/*  isTotRowsToGet is set tu true for the first call because i'm not sure that i will read all the desired content in one time
+		 *  but probably I'll get only a chunk of the content and i have to calculate the remaining to read */
+		FileContentResponseComplete response = testApi.getTextFromPointer(filePath, pointer, maxRowsToRead, isTotRowsToGetFirstCall, FileContentResponseComplete.class);
+		Integer maxRowsToReadInt;
+		if(maxRowsToRead == null) {
+			maxRowsToReadInt = null;
+		} else {
+			maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
+		}
+		
+		Integer rowsInFile = Integer.parseInt(response.rowsInFile);
+		Integer rowsRead = Integer.parseInt(response.rowsRead);
+		
+		Integer fileLength = Integer.parseInt(response.size);
+		Integer newPointer = Integer.parseInt(response.currentPointer);
+		
+		
+		// If pointer is equals or greater than fileLength I reached EOF
+		if(newPointer >= fileLength) {
+			return response;
+		}
+		
+		Integer totRowsRead = rowsRead;
+		
+		if(totRowsRead > 0) {
+			while(true) {
+				String newMaxRowsToReadInt;
+				if(maxRowsToReadInt == null) {
+					newMaxRowsToReadInt = null;
+				} else {
+					newMaxRowsToReadInt = String.valueOf(maxRowsToReadInt - totRowsRead);
+				}
+				
+				FileContentResponse responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), newMaxRowsToReadInt, isTotRowsToGetNextCalls, FileContentResponse.class);
+				rowsRead = Integer.parseInt(responsePart.rowsRead);
+				newPointer = Integer.parseInt(responsePart.currentPointer);
+				concatFileReponseAtTheEnd(response, responsePart);
+				totRowsRead += rowsRead;
+				if(maxRowsToReadInt != null && totRowsRead <= maxRowsToReadInt) {
+					break;
+				} else if(newPointer.equals(fileLength)) {
 					break;
 				}
 			}

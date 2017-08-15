@@ -56,7 +56,7 @@ public class FileReaderFromEnd extends FileReaderAbstract{
         
         
         if(pointer - BUFFER_SIZE <= 0) {
-        	BUFFER_SIZE += pointer - BUFFER_SIZE;
+        	BUFFER_SIZE = (int) pointer;
         	extraChars = 0;
         }
         

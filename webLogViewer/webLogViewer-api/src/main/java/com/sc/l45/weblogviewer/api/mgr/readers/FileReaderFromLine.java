@@ -120,7 +120,7 @@ public class FileReaderFromLine extends FileReaderAbstract{
             int lengthOfLinesAlreadyRead = ReaderUtils.getStringLengthFromList(linesRead);
                        
             if(raf.getFilePointer() + BUFFER_SIZE > fileLength) {
-            	BUFFER_SIZE -= fileLength - raf.getFilePointer();
+            	BUFFER_SIZE = (int) (fileLength - raf.getFilePointer());
             	extraChars = 0;
             }
             

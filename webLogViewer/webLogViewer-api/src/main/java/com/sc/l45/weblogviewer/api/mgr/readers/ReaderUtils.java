@@ -14,19 +14,30 @@ import com.sc.l45.weblogviewer.api.constants.FileConstants;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
 public class ReaderUtils {
+	/**
+	 * Convert content read from a file in {@link ArrayList} with one element per line
+	 * @param buffer content read
+	 * @return content read as {@link ArrayList}
+	 */
 	static List<String> convertBytesArrayToStringList(byte[] buffer) {
 		List<String> allLines = new ArrayList<>();
 		Pattern pattern = FileConstants.END_LINE_PATTERN;
 		
 		Matcher matcher;
-		String line = new String(buffer, FileConstants.ENCODING);
-		matcher = pattern.matcher(line);
+		String contentReadAsString = new String(buffer, FileConstants.ENCODING);
+		matcher = pattern.matcher(contentReadAsString);
 		int lastIndex = 0;
 		while(matcher.find()) {
-			allLines.add(line.substring(lastIndex, matcher.end()));
+			allLines.add(contentReadAsString.substring(lastIndex, matcher.end()));
 			lastIndex = matcher.end();
 		}
-		String lastLine = line.substring(lastIndex, line.length());
+		String lastLine;
+		if(contentReadAsString.charAt(contentReadAsString.length() - 1) == 0) {
+			// If I reached EOF, the last byte of the buffer is 0 because i'm reading one extra chars that doesn't exists
+			lastLine = contentReadAsString.substring(lastIndex, contentReadAsString.length() - 1);
+		} else {
+			lastLine = contentReadAsString.substring(lastIndex, contentReadAsString.length());
+		}
 		if(!lastLine.isEmpty()) {
 			allLines.add(lastLine);
 		}
