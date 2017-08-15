@@ -39,7 +39,7 @@ public abstract class FileReaderAbstract {
 	static void removeExceedingLines(ReadLinesResult result, Integer maxLinesToRead) {
 		if(maxLinesToRead != null) {
 			if(result.linesRead.size() < maxLinesToRead) {
-				maxLinesToRead = result.linesRead.size();
+				return;
 			}
 			result.linesRead = result.linesRead.subList(0, maxLinesToRead);
 			result.isLastLineFull = true;

@@ -126,8 +126,12 @@ public class FileReaderFromLine extends FileReaderAbstract{
             
             /* Here i create a buffer to read content from file to match the BUFFER_SIZE, if i've jumped 10 lines,
              * I'll read the bytes needed to fill the ignored lines ad the begininng */
-            buffer = new byte[BUFFER_SIZE - lengthOfLinesAlreadyRead + extraChars];
-            if(raf.read(buffer) != -1) {
+            int bufferSize = BUFFER_SIZE - lengthOfLinesAlreadyRead + extraChars;
+            if(bufferSize >= 0) {
+            	buffer = new byte[BUFFER_SIZE - lengthOfLinesAlreadyRead + extraChars];
+            }
+            
+            if(raf.read(buffer) != -1 && bufferSize >= 0) {
             	List<String> remainingLines = ReaderUtils.convertBytesArrayToStringList(buffer);
             	linesRead = ReaderUtils.concatList(linesRead, remainingLines);
             	result.pointer = raf.getFilePointer() - extraChars;

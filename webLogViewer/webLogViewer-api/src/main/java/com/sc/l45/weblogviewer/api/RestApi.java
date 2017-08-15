@@ -133,7 +133,7 @@ public class RestApi {
                 	pointerLong = 0;
                 }
                 
-                if(isTotRowsToGet == null || isTotRowsToGet.equals("")) {
+                if(StringUtils.isEmpty(isTotRowsToGet)) {
             		isTotRowsToGetInner = false;
             	} else {
             		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
@@ -157,10 +157,11 @@ public class RestApi {
             private File file = new File(filePath);
             private int fromLineInt;
             private Integer maxRowsToReadInt;
+            private boolean isTotRowsToGetInner;
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromLine(file, fromLineInt, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
+                return apiMgr.getTextFromLine(file, fromLineInt, maxRowsToReadInt, isTotRowsToGetInner);
             }
             
             @Override
@@ -182,6 +183,12 @@ public class RestApi {
                 } else {
                 	maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
                 }
+                
+                if(StringUtils.isEmpty(isTotRowsToGet)) {
+            		isTotRowsToGetInner = false;
+            	} else {
+            		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            	}
             }
             
             @Override
@@ -229,10 +236,11 @@ public class RestApi {
             private File file = new File(filePath);
             private long pointerLong;
             private Integer maxRowsToReadInt;
+            private boolean isTotRowsToGetInner;
             
             @Override
             FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromPointer(file, pointerLong, maxRowsToReadInt, Boolean.parseBoolean(isTotRowsToGet));
+                return apiMgr.getTextFromPointer(file, pointerLong, maxRowsToReadInt, isTotRowsToGetInner);
             }
 
             @Override
@@ -254,6 +262,12 @@ public class RestApi {
                 } else {
                 	maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
                 }
+                
+                if(StringUtils.isEmpty(isTotRowsToGet)) {
+            		isTotRowsToGetInner = false;
+            	} else {
+            		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            	}
             }
             
             @Override
