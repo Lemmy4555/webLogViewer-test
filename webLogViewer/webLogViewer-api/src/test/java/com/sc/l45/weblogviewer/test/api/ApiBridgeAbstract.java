@@ -3,7 +3,7 @@ package com.sc.l45.weblogviewer.test.api;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.EntityTag;
 
-abstract class TestApiAbstract implements TestApiInterface {
+abstract class ApiBridgeAbstract implements ApiBridgeInterface {
 	@Override
 	public String sendRequest(Builder request) {
         return sendRequest(request, null, null);
@@ -18,7 +18,7 @@ abstract class TestApiAbstract implements TestApiInterface {
     }
     
     public <T> T sendRequest(Builder request, Class<T> responseType, EntityTag eTag) {
-        return TestApiHelper.createResponse(responseType, TestApiHelper.setETag(request, eTag).get());
+        return ApiBridgeHelper.createResponse(responseType, ApiBridgeHelper.setETag(request, eTag).get());
     }
 	
 	@Override
@@ -95,4 +95,18 @@ abstract class TestApiAbstract implements TestApiInterface {
     }
     
     public abstract <T> T getHomeDir(Class<T> responseType, EntityTag eTag);
+    
+    public String getFileData(String filePath) {
+    	return getFileData(filePath, null, null);
+    }
+    
+    public String getFileData(String filePath, EntityTag eTag) {
+    	return getFileData(filePath, null, eTag);
+    }
+    
+    public <T> T getFileData(String filePath, Class<T> responseType) {
+    	return getFileData(filePath, responseType, null);
+    }
+    
+    public abstract <T> T getFileData(String filePath, Class<T> responseType, EntityTag eTag);
 }

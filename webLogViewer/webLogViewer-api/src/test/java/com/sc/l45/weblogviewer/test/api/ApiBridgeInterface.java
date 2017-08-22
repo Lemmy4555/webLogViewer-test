@@ -2,7 +2,7 @@ package com.sc.l45.weblogviewer.test.api;
 
 import javax.ws.rs.client.Invocation.Builder;
 
-interface TestApiInterface {
+interface ApiBridgeInterface {
 	public String sendRequest(Builder request);
 
 	public String getTailText(String filePath, String pointer, String maxRowsToRead, String isTotRowsToGet, String getFileLength);
@@ -14,4 +14,6 @@ interface TestApiInterface {
 	public String readFile(String filePath);
 
 	public String getHomeDir();
+	
+	public String getFileData(String filePath);
 }

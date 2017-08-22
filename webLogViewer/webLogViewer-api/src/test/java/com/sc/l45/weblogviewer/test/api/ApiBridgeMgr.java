@@ -8,12 +8,12 @@ import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
 
-public class TestApiMgr {
-	private TestApi testApi;
+public class ApiBridgeMgr {
+	private ApiBridge testApi;
 	private static final String isTotRowsToGetFirstCall = "true";
 	private static final String isTotRowsToGetNextCalls = "false";
 	
-	public TestApiMgr(TestApi testApi) {
+	public ApiBridgeMgr(ApiBridge testApi) {
 		if(testApi == null) {
 			throw new NullPointerException("testApi has to be created in order to user Mgr");
 		}
