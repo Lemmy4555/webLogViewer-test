@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -22,9 +21,9 @@ import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.responses.utils.FileContentResponseUtils;
 import com.sc.l45.weblogviewer.api.utils.Timer;
-import com.sc.l45.weblogviewer.test.api.ApiBridgeMgr;
+import com.sc.l45.weblogviewer.test.bridge.ApiBridgeMgr;
+import com.sc.l45.weblogviewer.test.bridge.responses.FileContentBridgeResponse;
 import com.sc.l45.weblogviewer.test.config.ApiTestConf;
-import com.sc.l45.weblogviewer.test.config.TestConf;
 
 public class ApiTest extends ApiTestConf {
     private final static Logger logger = LoggerFactory.getLogger(ApiTest.class);
@@ -38,7 +37,8 @@ public class ApiTest extends ApiTestConf {
         String rowsToReadFromEnd = "400000";
         
         String filePath = testFile.getAbsolutePath();
-        FileContentResponseComplete response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        FileContentResponseComplete response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -46,7 +46,8 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = "10";
-        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -54,7 +55,8 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = null;
-        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -62,7 +64,8 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = "0";
-        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -70,7 +73,8 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = "393210";
-        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -78,7 +82,8 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         rowsToReadFromEnd = "5000";
-        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response =  new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -86,14 +91,13 @@ public class ApiTest extends ApiTestConf {
     
     @Test
     @RunAsClient
-    //TODO to be updated
     public void getTailTextWithCache(@ArquillianResource URL baseUrl) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
         Timer timer = new Timer();
         String rowsToReadFromEnd = "400000";
         
         String filePath = testFile.getAbsolutePath();
-        Response rsResponse = api(baseUrl).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", Response.class);
-        FileContentResponseComplete response = rsResponse.readEntity(FileContentResponseComplete.class);
+        FileContentBridgeResponse<FileContentResponseComplete> bridgeResponse = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        FileContentResponseComplete response = bridgeResponse.getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(rowsInFile);
@@ -101,18 +105,23 @@ public class ApiTest extends ApiTestConf {
         
         timer.reset();
         
-        Response rsResponse304 = api(baseUrl).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", Response.class, rsResponse.getEntityTag());
-        Assert.assertEquals(304, rsResponse304.getStatus());
+        bridgeResponse = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", FileContentResponseComplete.class, bridgeResponse.getETag());
+        Assert.assertEquals(304, bridgeResponse.getStatus());
         logger.info("Tornato 304 in: {}", timer.time());
         
         timer.reset();
         
         rowsToReadFromEnd = "10";
-        response = api(baseUrl).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", FileContentResponseComplete.class, rsResponse.getEntityTag());
+        bridgeResponse = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", FileContentResponseComplete.class);
+        response = bridgeResponse.getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(rowsInFile);
         logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
+        
+        bridgeResponse = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "true", FileContentResponseComplete.class, bridgeResponse.getETag());
+        Assert.assertEquals(304, bridgeResponse.getStatus());
+        logger.info("Tornato 304 in: {}", timer.time());
     }
 
     @Test
@@ -126,7 +135,7 @@ public class ApiTest extends ApiTestConf {
         FileContentResponseComplete response = null;
 
         fromLine = "393210";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -134,7 +143,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "393200";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine, maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -142,7 +151,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -150,7 +159,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "400000";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -158,7 +167,7 @@ public class ApiTest extends ApiTestConf {
         timer.reset();
         
         fromLine = "310000";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -167,7 +176,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = "0";
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -176,7 +185,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = null;
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -185,7 +194,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = null;
         maxRowsToRead = null;
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -194,7 +203,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = null;
         maxRowsToRead = "0";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -203,7 +212,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = null;
         maxRowsToRead = "393210";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -212,7 +221,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = "393210";
         maxRowsToRead = "393210";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -221,7 +230,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = "391210";
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), timer.time());
@@ -230,7 +239,7 @@ public class ApiTest extends ApiTestConf {
         
         fromLine = "391210";
         maxRowsToRead = "400000";
-        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTextFromLine(filePath, fromLine,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         logger.info("Lette {}/{} righe dalla riga {} dal file {} con un massimo di {} da leggere in: {}", response.rowsRead, rowsInFile, fromLine, testFile.getAbsolutePath(), maxRowsToRead, timer.time());
@@ -274,13 +283,14 @@ public class ApiTest extends ApiTestConf {
         Timer timer = new Timer();
         String maxRowsToRead = null;
         FileContentResponseComplete response;
-        FileContentResponse responsePointer;
+        FileContentResponseComplete responsePointer;
         String pointer;
         String filePath = testFile.getAbsolutePath();
         
         rowsToReadFromEnd = "10";
         maxRowsToRead = null;
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -288,7 +298,7 @@ public class ApiTest extends ApiTestConf {
         Assert.assertNotNull(rowsInFile);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, response.rowsRead);
@@ -298,7 +308,8 @@ public class ApiTest extends ApiTestConf {
         
         rowsToReadFromEnd = "10000";
         maxRowsToRead = null;
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -306,7 +317,7 @@ public class ApiTest extends ApiTestConf {
         Assert.assertNotNull(rowsInFile);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, response.rowsRead);
@@ -316,7 +327,8 @@ public class ApiTest extends ApiTestConf {
         
         rowsToReadFromEnd = "10000";
         maxRowsToRead = "1000";
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -324,7 +336,7 @@ public class ApiTest extends ApiTestConf {
         Assert.assertNotNull(rowsInFile);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, maxRowsToRead);
@@ -334,7 +346,8 @@ public class ApiTest extends ApiTestConf {
         
         rowsToReadFromEnd = "10000";
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -342,7 +355,7 @@ public class ApiTest extends ApiTestConf {
         Assert.assertNotNull(rowsInFile);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, maxRowsToRead);
@@ -352,7 +365,8 @@ public class ApiTest extends ApiTestConf {
         
         rowsToReadFromEnd = "10";
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
@@ -360,7 +374,7 @@ public class ApiTest extends ApiTestConf {
         Assert.assertNotNull(rowsInFile);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, maxRowsToRead);
@@ -370,14 +384,15 @@ public class ApiTest extends ApiTestConf {
         
         rowsToReadFromEnd = "50";
         maxRowsToRead = "10";
-        response = new ApiBridgeMgr(api(baseUrl)).getTailText(filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false");
+        response = new ApiBridgeMgr(api(baseUrl)).getTailText(
+        		filePath, Long.toString(testFile.length()), rowsToReadFromEnd, "false", FileContentResponseComplete.class).getResponse();
         Assert.assertNotNull(response.readContent);
         Assert.assertNotNull(response.rowsRead);
         Assert.assertNotNull(response.size);
         Assert.assertNotNull(response.encoding);
         pointer = ((Integer) (Integer.parseInt(response.size) - FileContentResponseUtils.getRowsAsString(response).length())).toString();
         timer.reset();
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         Assert.assertEquals(responsePointer.rowsRead, maxRowsToRead);
@@ -387,7 +402,7 @@ public class ApiTest extends ApiTestConf {
         
         maxRowsToRead = "10";
         pointer = "0";
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", responsePointer.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -396,7 +411,7 @@ public class ApiTest extends ApiTestConf {
         
         maxRowsToRead = "1000";
         pointer = "0";
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", responsePointer.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -405,7 +420,7 @@ public class ApiTest extends ApiTestConf {
         
         maxRowsToRead = null;
         pointer = "0";
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", responsePointer.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -414,7 +429,7 @@ public class ApiTest extends ApiTestConf {
         
         maxRowsToRead = "10";
         pointer = "78968582";
-        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false");
+        responsePointer = new ApiBridgeMgr(api(baseUrl)).getTextFromPointer(filePath, pointer,  maxRowsToRead, "false", FileContentResponseComplete.class);
         Assert.assertNotNull(responsePointer.readContent);
         Assert.assertNotNull(responsePointer.rowsRead);
         logger.info("Lette {}/{} righe dal file {} in: {}", responsePointer.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
@@ -422,6 +437,7 @@ public class ApiTest extends ApiTestConf {
     
     @Test
     @RunAsClient
+    //TODO to be updated
     public void getTextFromPointerWithCache(@ArquillianResource URL baseUrl) throws JsonParseException, JsonMappingException, IOException, URISyntaxException {
         final String rowsToReadFromEnd = "10";
         Timer timer = new Timer();
@@ -453,6 +469,20 @@ public class ApiTest extends ApiTestConf {
     
     @Test
 	@RunAsClient
+	public void readFile(@ArquillianResource URL baseUrl) throws JsonParseException, JsonMappingException, IOException, URISyntaxException {
+	    Timer timer = new Timer();
+	    
+	    final String filePath = testFile.getAbsolutePath();
+	    FileContentResponseComplete response = new ApiBridgeMgr(api(baseUrl)).readFile(filePath, FileContentResponseComplete.class);
+	    Assert.assertNotNull(response.readContent);
+	    Assert.assertNotNull(response.rowsRead);
+	    Assert.assertNotNull(rowsInFile);
+	    logger.info("Lette {}/{} righe dal file {} in: {}", response.rowsRead, rowsInFile, testFile.getAbsolutePath(), timer.time());
+	}
+    
+    @Test
+	@RunAsClient
+	// TODO to be update
 	public void readFileWithCache(@ArquillianResource URL baseUrl) throws JsonParseException, JsonMappingException, IOException, URISyntaxException {
 	    Timer timer = new Timer();
 	    final String filePath = testFile.getAbsolutePath();
@@ -469,6 +499,14 @@ public class ApiTest extends ApiTestConf {
 	    Assert.assertEquals(304, response304.getStatus());
 	    logger.info("Tornato 304 in: {}", timer.time());
 	}
+    
+    @Test
+    @RunAsClient
+    public void getFileData(@ArquillianResource URL baseUrl) throws URISyntaxException {
+    	final String filePath = testFile.getAbsolutePath();
+    	FileDataResponse response = api(baseUrl).getFileData(filePath, FileDataResponse.class);
+    	logger.info(response.toString());
+    }
 
 	@Test
     @RunAsClient

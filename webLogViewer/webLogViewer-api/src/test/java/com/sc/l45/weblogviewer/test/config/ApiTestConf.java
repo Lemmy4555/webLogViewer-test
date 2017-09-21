@@ -11,7 +11,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
-import com.sc.l45.weblogviewer.test.api.ApiBridge;
+import com.sc.l45.weblogviewer.test.bridge.ApiBridge;
 
 /**
  * This class has all the configuration to setup JUnit tests, it has to be extended by Test Classes

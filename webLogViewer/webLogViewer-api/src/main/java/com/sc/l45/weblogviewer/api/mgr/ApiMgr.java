@@ -57,16 +57,9 @@ public class ApiMgr {
 	    return response;
 	}
 	
+	@Deprecated
 	public FileContentResponse readFile(File file) throws IOException {
-        List<String> allLines = FileUtils.readLines(file, FileConstants.ENCODING);
-        
-        FileContentResponse response;
-        response = new FileContentResponseComplete(
-                allLines, Integer.toString(allLines.size()), 
-                Long.toString(file.length()), FileConstants.ENCODING.name(),
-                Integer.toString(allLines.size()),
-                Long.toString(file.length())
-            );
+		FileContentResponse response = getTextFromLine(file, 0, null, true);
         return response;
     }
 

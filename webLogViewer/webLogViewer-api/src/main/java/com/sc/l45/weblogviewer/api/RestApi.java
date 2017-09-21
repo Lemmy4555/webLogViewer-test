@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.sc.l45.weblogviewer.api.cache.CacheControlMgr;
 import com.sc.l45.weblogviewer.api.config.RestPaths;
+import com.sc.l45.weblogviewer.api.constants.StringKeywords;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
 import com.sc.l45.weblogviewer.api.mgr.ApiMgr;
 import com.sc.l45.weblogviewer.api.responses.DefaultDirResponse;
@@ -34,7 +35,7 @@ public class RestApi {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path(RestPaths.RestApi.GET_FILE_DATA)
+	@Path(RestPaths.RestApi.GET_FILE_DATA)
     public Response getFileData(@QueryParam("filePath") String filePath, @Context UriInfo ui) {
         return new DefaultApiBehavior<FileDataResponse>(ui) {
 
@@ -108,6 +109,10 @@ public class RestApi {
             private long pointerLong;
             private boolean isTotRowsToGetInner;
             
+            private String ccMaxRowsToRead = null;
+            private String ccIsTotRowsToGet = null;
+            private String ccPointer = null;
+            
             @Override
             FileContentResponse api() throws IOException {
                 return apiMgr.getTailText(file, maxRowsToReadInt, pointerLong, isTotRowsToGetInner);
@@ -119,30 +124,37 @@ public class RestApi {
                 
                 if (StringUtils.isEmpty(maxRowsToRead)) {
                     maxRowsToReadInt = 0;
+                    ccMaxRowsToRead =  StringKeywords.ZERO;
                 } else {
                     maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
+                    ccMaxRowsToRead = maxRowsToRead;
                 }
                 
                 if(StringUtils.isEmpty(pointer)) {
                 	pointerLong = 0;
+                	ccPointer =  StringKeywords.ZERO;
                 } else {
                 	pointerLong = Long.parseLong(pointer);
+                	ccPointer = pointer;
                 }
                 
                 if(pointerLong < 0) {
                 	pointerLong = 0;
+                	ccPointer = StringKeywords.ZERO;
                 }
                 
                 if(StringUtils.isEmpty(isTotRowsToGet)) {
             		isTotRowsToGetInner = false;
+            		ccIsTotRowsToGet = StringKeywords.FALSE;
             	} else {
             		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            		ccIsTotRowsToGet = isTotRowsToGet;
             	}
             }
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-        		return new CacheControlMgr(request, file);
+        		return new CacheControlMgr(request, file, ccMaxRowsToRead, ccIsTotRowsToGet, ccPointer);
             }
         }.call();
         return response;
@@ -205,6 +217,7 @@ public class RestApi {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path(RestPaths.RestApi.READ_FILE)
+    @Deprecated
     public Response readFile(@QueryParam("filePath") String filePath, 
             @Context Request request, @Context UriInfo ui) {
         return new DefaultFileApiBehavior<FileContentResponse>(ui) {
@@ -273,31 +286,6 @@ public class RestApi {
             @Override
             CacheControlMgr cacheControl() throws Exception {
                 return new CacheControlMgr(request, file, pointer);
-            }
-        }.call();
-    }
-    
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(RestPaths.RestApi.GET_FULL_FILE)
-    public Response getFullFile(@QueryParam("filePath") String filePath,
-            @Context Request request, @Context UriInfo ui) {
-        return new DefaultFileApiBehavior<FileContentResponse>(ui) {
-            private File file = new File(filePath);
-            
-            @Override
-            FileContentResponse api() throws IOException {
-                return apiMgr.getTextFromLine(file, 0, null, true);
-            }
-
-            @Override
-            void before() throws FileNotFoundException, IOException {
-                fileMgr.checkFile(filePath);
-            }
-            
-            @Override
-            CacheControlMgr cacheControl() throws Exception {
-                return new CacheControlMgr(request, file);
             }
         }.call();
     }

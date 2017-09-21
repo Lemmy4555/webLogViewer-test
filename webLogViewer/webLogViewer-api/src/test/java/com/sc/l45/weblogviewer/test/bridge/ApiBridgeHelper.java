@@ -1,4 +1,4 @@
-package com.sc.l45.weblogviewer.test.api;
+package com.sc.l45.weblogviewer.test.bridge;
 
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.EntityTag;

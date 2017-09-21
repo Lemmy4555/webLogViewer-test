@@ -1,4 +1,4 @@
-package com.sc.l45.weblogviewer.test.api;
+package com.sc.l45.weblogviewer.test.bridge;
 
 import java.net.URISyntaxException;
 import java.net.URL;

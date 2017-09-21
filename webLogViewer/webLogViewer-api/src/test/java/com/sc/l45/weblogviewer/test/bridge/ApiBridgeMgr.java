@@ -1,16 +1,18 @@
-package com.sc.l45.weblogviewer.test.api;
+package com.sc.l45.weblogviewer.test.bridge;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Response;
+
 import com.sc.l45.weblogviewer.api.mgr.readers.ReaderUtils;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
-import com.sc.l45.weblogviewer.api.responses.FileContentResponseComplete;
 import com.sc.l45.weblogviewer.api.utils.ListUtils;
+import com.sc.l45.weblogviewer.test.bridge.responses.FileContentBridgeResponse;
 
 public class ApiBridgeMgr {
 	private ApiBridge testApi;
-	private static final String isTotRowsToGetFirstCall = "true";
 	private static final String isTotRowsToGetNextCalls = "false";
 	
 	public ApiBridgeMgr(ApiBridge testApi) {
@@ -19,9 +21,24 @@ public class ApiBridgeMgr {
 		}
 		this.testApi = testApi;
 	}
+	
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTailText(
+			String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
+		return getTailText(filePath, pointer, maxRowsToRead, isTotRowsToRead,responseType, null);
+	}
 
-	public FileContentResponseComplete getTailText(String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead) {
-		FileContentResponseComplete response = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToRead, FileContentResponseComplete.class);
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTailText(
+			String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType, EntityTag eTag) {
+		Response genericResponse;
+		genericResponse = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToRead, Response.class, eTag);
+		
+		EntityTag resETag = genericResponse.getEntityTag();
+		
+		if(genericResponse.getStatus() == 304) {
+			return new FileContentBridgeResponse<T>(null, genericResponse.getStatus(), eTag);
+		}
+		
+		T response = genericResponse.readEntity(responseType);
 		
 		Integer rowsfromEndInt;
 		if(maxRowsToRead == null) {
@@ -34,7 +51,7 @@ public class ApiBridgeMgr {
 		Integer newPointer = Integer.parseInt(response.currentPointer);
 		
 		if(maxRowsToRead != null && rowsRead.equals(rowsfromEndInt)) {
-			return response;
+			return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 		}
 		
 		if(rowsRead > 0) {
@@ -57,11 +74,11 @@ public class ApiBridgeMgr {
 			}
 		}
 		
-		return response;
+		return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 	}
 	
-	public FileContentResponseComplete getTextFromLine(String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead) {
-		FileContentResponseComplete response = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToRead, FileContentResponseComplete.class);
+	public <T extends FileContentResponse> T getTextFromLine(String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
+		T response = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToRead, responseType);
 		
 		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
@@ -106,9 +123,13 @@ public class ApiBridgeMgr {
 		
 		return response;
 	}
+	
+	public <T extends FileContentResponse> T readFile(String filePath, Class<T> responseType) {
+		return getTextFromPointer(filePath, "0", null, "false", responseType);
+	}
 
-	public FileContentResponse getTextFromPointer(String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead) {
-		FileContentResponseComplete response = testApi.getTextFromPointer(filePath, pointer, maxRowsToRead, isTotRowsToRead, FileContentResponseComplete.class);
+	public <T extends FileContentResponse> T getTextFromPointer(String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
+		T response = testApi.getTextFromPointer(filePath, pointer, maxRowsToRead, isTotRowsToRead, responseType);
 		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
 			maxRowsToReadInt = null;
