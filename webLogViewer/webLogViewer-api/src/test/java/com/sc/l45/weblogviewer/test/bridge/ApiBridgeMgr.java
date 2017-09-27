@@ -138,7 +138,11 @@ public class ApiBridgeMgr {
 	}
 	
 	public <T extends FileContentResponse> FileContentBridgeResponse<T> readFile(String filePath, Class<T> responseType) {
-		return getTextFromPointer(filePath, "0", null, "false", responseType);
+		return readFile(filePath, responseType, null);
+	}
+	
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> readFile(String filePath, Class<T> responseType, EntityTag eTag) {
+		return getTextFromPointer(filePath, "0", null, "false", responseType, eTag);
 	}
 	
 	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTextFromPointer(

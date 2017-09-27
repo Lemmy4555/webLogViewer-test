@@ -504,12 +504,11 @@ public class ApiTest extends ApiTestConf {
     
     @Test
 	@RunAsClient
-	// TODO to be update
 	public void readFileWithCache(@ArquillianResource URL baseUrl) throws JsonParseException, JsonMappingException, IOException, URISyntaxException {
 	    Timer timer = new Timer();
 	    final String filePath = testFile.getAbsolutePath();
-	    Response rsResponse = api(baseUrl).readFile(filePath, Response.class);
-	    FileContentResponseComplete response = rsResponse.readEntity(FileContentResponseComplete.class);
+	    FileContentBridgeResponse<FileContentResponseComplete> genericResponse = new ApiBridgeMgr(api(baseUrl)).readFile(filePath, FileContentResponseComplete.class);
+	    FileContentResponseComplete response = genericResponse.getResponse();
 	    Assert.assertNotNull(response.readContent);
 	    Assert.assertNotNull(response.rowsRead);
 	    Assert.assertNotNull(rowsInFile);
@@ -517,8 +516,8 @@ public class ApiTest extends ApiTestConf {
 	    
 	    timer.reset();
 	    
-	    Response response304 = api(baseUrl).readFile(filePath, Response.class, rsResponse.getEntityTag());
-	    Assert.assertEquals(304, response304.getStatus());
+	    genericResponse = new ApiBridgeMgr(api(baseUrl)).readFile(filePath, FileContentResponseComplete.class, genericResponse.getETag());
+	    Assert.assertEquals(304, genericResponse.getStatus());
 	    logger.info("Tornato 304 in: {}", timer.time());
 	}
     
