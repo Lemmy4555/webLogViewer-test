@@ -171,6 +171,10 @@ public class RestApi {
             private Integer maxRowsToReadInt;
             private boolean isTotRowsToGetInner;
             
+            private String ccFromLine;
+            private String ccMaxRowsToRead;
+            private String ccIsTotRowsToGet;
+            
             @Override
             FileContentResponse api() throws IOException {
                 return apiMgr.getTextFromLine(file, fromLineInt, maxRowsToReadInt, isTotRowsToGetInner);
@@ -182,34 +186,37 @@ public class RestApi {
 
                 if (StringUtils.isEmpty(fromLine)) {
                 	fromLineInt = 0;
+                	ccFromLine = StringKeywords.ZERO;
                 } else {
                 	fromLineInt = Integer.parseInt(fromLine);
+                	ccFromLine = fromLine;
                 }
                 
                 if(fromLineInt < 0) {
                 	fromLineInt = 0;
+                	ccFromLine = StringKeywords.ZERO;
                 }
                 
                 if(StringUtils.isEmpty(maxRowsToRead)) {
                 	maxRowsToReadInt = null;
+                	ccMaxRowsToRead = StringKeywords.NULL;
                 } else {
                 	maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
+                	ccMaxRowsToRead = maxRowsToRead;
                 }
                 
                 if(StringUtils.isEmpty(isTotRowsToGet)) {
             		isTotRowsToGetInner = false;
+            		ccIsTotRowsToGet = StringKeywords.FALSE;
             	} else {
             		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            		ccIsTotRowsToGet = isTotRowsToGet;
             	}
             }
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-            	if(maxRowsToReadInt != null) {
-            		return new CacheControlMgr(request, file, String.valueOf(fromLineInt), String.valueOf(maxRowsToReadInt));
-            	} else {
-            		return new CacheControlMgr(request, file, String.valueOf(fromLineInt));
-            	}
+        		return new CacheControlMgr(request, file, ccFromLine, ccMaxRowsToRead, ccIsTotRowsToGet);
             }
         }.call();
     }

@@ -29,8 +29,7 @@ public class ApiBridgeMgr {
 
 	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTailText(
 			String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType, EntityTag eTag) {
-		Response genericResponse;
-		genericResponse = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToRead, Response.class, eTag);
+		Response genericResponse = testApi.getTailText(filePath, pointer, maxRowsToRead, isTotRowsToRead, Response.class, eTag);
 		
 		EntityTag resETag = genericResponse.getEntityTag();
 		
@@ -77,8 +76,22 @@ public class ApiBridgeMgr {
 		return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 	}
 	
-	public <T extends FileContentResponse> T getTextFromLine(String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
-		T response = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToRead, responseType);
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTextFromLine(
+			String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
+		return getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToRead, responseType, null);
+	}
+	
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTextFromLine(
+			String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType, EntityTag eTag) {
+		Response genericResponse = testApi.getTextFromLine(filePath, fromLine, maxRowsToRead, isTotRowsToRead, Response.class, eTag);
+		
+		EntityTag resETag = genericResponse.getEntityTag();
+		
+		if(genericResponse.getStatus() == 304) {
+			return new FileContentBridgeResponse<T>(null, genericResponse.getStatus(), eTag);
+		}
+		
+		T response = genericResponse.readEntity(responseType);
 		
 		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
@@ -98,7 +111,7 @@ public class ApiBridgeMgr {
 		}
 		
 		if((maxRowsToRead != null && maxRowsToReadInt.equals(rowsRead)) || newPointer.equals(fileLength)) {
-			return response;
+			return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 		}
 
 		if(rowsRead > 0) {
@@ -121,15 +134,30 @@ public class ApiBridgeMgr {
 			}
 		}
 		
-		return response;
+		return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 	}
 	
-	public <T extends FileContentResponse> T readFile(String filePath, Class<T> responseType) {
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> readFile(String filePath, Class<T> responseType) {
 		return getTextFromPointer(filePath, "0", null, "false", responseType);
 	}
-
-	public <T extends FileContentResponse> T getTextFromPointer(String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
-		T response = testApi.getTextFromPointer(filePath, pointer, maxRowsToRead, isTotRowsToRead, responseType);
+	
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTextFromPointer(
+			String filePath, String fromLine, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType) {
+		return getTextFromPointer(filePath, fromLine, maxRowsToRead, isTotRowsToRead, responseType, null);
+	}
+	
+	public <T extends FileContentResponse> FileContentBridgeResponse<T> getTextFromPointer(
+			String filePath, String pointer, String maxRowsToRead, String isTotRowsToRead, Class<T> responseType, EntityTag eTag) {
+		Response genericResponse = testApi.getTextFromPointer(filePath, pointer, maxRowsToRead, isTotRowsToRead, Response.class, eTag);
+		
+		EntityTag resETag = genericResponse.getEntityTag();
+		
+		if(genericResponse.getStatus() == 304) {
+			return new FileContentBridgeResponse<T>(null, genericResponse.getStatus(), eTag);
+		}
+		
+		T response = genericResponse.readEntity(responseType);
+		
 		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
 			maxRowsToReadInt = null;
@@ -142,7 +170,7 @@ public class ApiBridgeMgr {
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
 		
 		if((maxRowsToRead != null && maxRowsToReadInt.equals(rowsRead)) || newPointer.equals(fileLength)) {
-			return response;
+			return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 		}
 		
 		Integer totRowsRead = rowsRead;
@@ -169,7 +197,7 @@ public class ApiBridgeMgr {
 			}
 		}
 		
-		return response;
+		return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 	}
 
 	private FileContentResponse concatFileReponseAtTheEnd(FileContentResponse response, FileContentResponse toConcat) {

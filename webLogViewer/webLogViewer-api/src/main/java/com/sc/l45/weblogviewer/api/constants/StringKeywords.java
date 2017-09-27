@@ -1,6 +1,7 @@
 package com.sc.l45.weblogviewer.api.constants;
 
 public class StringKeywords {
-	public final static String FALSE = "false";
-	public final static String ZERO = "0";
+	public static final String FALSE = "false";
+	public static final String ZERO = "0";
+	public static final String NULL = "null";
 }
