@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.utils.Timer;
-import com.sc.l45.weblogviewer.test.config.ApiTestConf;
+import com.sc.l45.weblogviewer.test.config.arquillian.ApiTestConf;
+import com.sc.l45.weblogviewer.test.arquillian.ApiTest;
 
 /**
  * This class get a panoramic on how to write new tests and explain the architecture

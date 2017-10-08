@@ -20,12 +20,6 @@
       <version>0.0.1-SNAPSHOT</version>
       <type>war</type>
     </dependency>
-    <dependency>
-      <groupId>com.sc.l45.weblogviewer</groupId>
-      <artifactId>webLogViewer-war</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <type>war</type>
-    </dependency>
   </dependencies>
 
   <build>
@@ -36,11 +30,6 @@
         <configuration>
 	         <defaultLibBundleDir>lib</defaultLibBundleDir>
 	         <modules>
-               <webModule>
-                 <groupId>com.sc.l45.weblogviewer</groupId>
-                 <artifactId>webLogViewer-war</artifactId>
-                 <contextRoot>/webLogViewer</contextRoot>
-               </webModule>
                <webModule>
                  <groupId>com.sc.l45.weblogviewer</groupId>
                  <artifactId>webLogViewer-api</artifactId>

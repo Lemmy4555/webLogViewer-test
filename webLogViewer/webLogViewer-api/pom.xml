@@ -37,15 +37,15 @@
 	<dependencies>
 		<!-- logs -->
 		<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-slf4j-impl</artifactId>
-	    <version>2.8.1</version>
-	  </dependency>
-	  <dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-core</artifactId>
-	    <version>2.8.1</version>
-	  </dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.8.1</version>
+		</dependency>
 		<!-- api -->
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
@@ -73,14 +73,14 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-	    <groupId>org.codehaus.jackson</groupId>
-	    <artifactId>jackson-core-asl</artifactId>
-	    <version>1.9.13</version>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>1.9.13</version>
 		</dependency>
 		<dependency>
-		  <groupId>com.google.guava</groupId>
-		  <artifactId>guava</artifactId>
-		  <version>21.0</version>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>21.0</version>
 		</dependency>
 
 		<!-- test -->
@@ -147,8 +147,8 @@
 						<arquillian.launch>glassfish-embedded</arquillian.launch>
 					</systemPropertyVariables>
 					<excludes>
-            <exclude>**/TestConf.java</exclude>
-          </excludes>
+						<exclude>**/TestConf.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>

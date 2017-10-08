@@ -16,8 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
 import com.sc.l45.weblogviewer.api.utils.Timer;
-import com.sc.l45.weblogviewer.test.config.ApiTestConf;
 import com.sc.l45.weblogviewer.test.config.TestConf;
+import com.sc.l45.weblogviewer.test.config.arquillian.ApiTestConf;
+import com.sc.l45.weblogviewer.test.arquillian.ApiTest;
 
 public class UtilityTests extends ApiTestConf {
 	private final static Logger logger = LoggerFactory.getLogger(ApiTest.class);
