@@ -39,17 +39,17 @@ public class ApiBridgeMgr {
 		
 		T response = genericResponse.readEntity(responseType);
 		
-		Integer rowsfromEndInt;
+		Integer maxRowsToReadInt;
 		if(maxRowsToRead == null) {
-			rowsfromEndInt = 0;
+			maxRowsToReadInt = null;
 		} else {
-			rowsfromEndInt = Integer.parseInt(maxRowsToRead);
+			maxRowsToReadInt = Integer.parseInt(maxRowsToRead);
 		}
 		
 		Integer rowsRead = Integer.parseInt(response.rowsRead);
 		Integer newPointer = Integer.parseInt(response.currentPointer);
 		
-		if(maxRowsToRead != null && rowsRead.equals(rowsfromEndInt)) {
+		if(maxRowsToRead != null && rowsRead.equals(maxRowsToReadInt) || newPointer.equals(0)) {
 			return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 		}
 		
@@ -57,15 +57,15 @@ public class ApiBridgeMgr {
 			while(true) {
 				Integer totRowsRead = Integer.parseInt(response.rowsRead);
 				FileContentResponse responsePart;
-				if(rowsfromEndInt != null) {
-					responsePart = testApi.getTailText(filePath, newPointer.toString(), String.valueOf(rowsfromEndInt - totRowsRead), isTotRowsToGetNextCalls, FileContentResponse.class);
+				if(maxRowsToReadInt != null) {
+					responsePart = testApi.getTailText(filePath, newPointer.toString(), String.valueOf(maxRowsToReadInt - totRowsRead), isTotRowsToGetNextCalls, FileContentResponse.class);
 				} else {
 					responsePart = testApi.getTailText(filePath, newPointer.toString(), null, isTotRowsToGetNextCalls, FileContentResponse.class);
 				}
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Integer.parseInt(responsePart.currentPointer);;
 				concatFileReponseAtBeginning(response, responsePart);
-				if(rowsfromEndInt != null && rowsfromEndInt.equals(Integer.parseInt(response.rowsRead))) {
+				if(maxRowsToReadInt != null && maxRowsToReadInt.equals(Integer.parseInt(response.rowsRead))) {
 					break;
 				} else if(newPointer.equals(0)) {
 					break;
