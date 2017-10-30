@@ -57,6 +57,7 @@ public class FileReaderFromPointer extends FileReaderAbstract{
             raf.seek(pointer);
             
             if(raf.read(buffer) != -1) {
+            	result.pointer = raf.getFilePointer();
             	
             	allLines = ReaderUtils.convertBytesArrayToStringList(buffer);
                 if(allLines.size() == 0) {
