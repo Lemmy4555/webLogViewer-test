@@ -131,8 +131,8 @@ public class RestApi {
                 }
                 
                 if(StringUtils.isEmpty(pointer)) {
-                	pointerLong = 0;
-                	ccPointer =  StringKeywords.ZERO;
+                	pointerLong = file.length();
+                	ccPointer =  String.valueOf(pointerLong);
                 } else {
                 	pointerLong = Long.parseLong(pointer);
                 	ccPointer = pointer;
