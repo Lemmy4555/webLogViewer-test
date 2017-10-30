@@ -26,7 +26,7 @@ public class ApiTestConf extends TestConf {
      */
     public ApiBridge api() throws URISyntaxException, MalformedURLException {
     	if(baseUrl == null) {
-    		baseUrl = new URL("http://localhost:8080/webLogViewer-api");
+    		baseUrl = new URL("http://localhost:8080/webLogViewer");
     	}
         if(testApi == null) {
             testApi = new ApiBridge(baseUrl);
