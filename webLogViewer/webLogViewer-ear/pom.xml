@@ -33,7 +33,7 @@
                <webModule>
                  <groupId>com.sc.l45.weblogviewer</groupId>
                  <artifactId>webLogViewer-api</artifactId>
-                 <contextRoot>/webLogViewer-api</contextRoot>
+                 <contextRoot>/webLogViewer</contextRoot>
                </webModule>
             </modules>
 	      </configuration>
