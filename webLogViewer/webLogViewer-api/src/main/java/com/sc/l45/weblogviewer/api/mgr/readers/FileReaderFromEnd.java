@@ -69,8 +69,6 @@ public class FileReaderFromEnd extends FileReaderAbstract{
             raf.seek(newPointer);
             
             if(raf.read(buffer) != -1) {
-            	result.pointer = raf.getFilePointer();
-            	
             	allLines = ReaderUtils.convertBytesArrayToStringList(buffer);
                 if(allLines.size() == 0) {
                 	return new ReadLinesResult();

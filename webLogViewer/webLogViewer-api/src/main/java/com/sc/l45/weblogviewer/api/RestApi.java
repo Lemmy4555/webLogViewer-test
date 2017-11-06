@@ -23,9 +23,11 @@ import com.sc.l45.weblogviewer.api.config.RestPaths;
 import com.sc.l45.weblogviewer.api.constants.StringKeywords;
 import com.sc.l45.weblogviewer.api.file.mgr.FileMgr;
 import com.sc.l45.weblogviewer.api.mgr.ApiMgr;
+import com.sc.l45.weblogviewer.api.mgr.readers.ReaderUtils;
 import com.sc.l45.weblogviewer.api.responses.DefaultDirResponse;
 import com.sc.l45.weblogviewer.api.responses.FileContentResponse;
 import com.sc.l45.weblogviewer.api.responses.FileDataResponse;
+import com.sc.l45.weblogviewer.api.responses.FileDataResponseComplete;
 import com.sc.l45.weblogviewer.api.responses.FileListDataResponse;
 
 @Path("")
@@ -36,18 +38,32 @@ public class RestApi {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
 	@Path(RestPaths.RestApi.GET_FILE_DATA)
-    public Response getFileData(@QueryParam("filePath") String filePath, @Context UriInfo ui) {
+    public Response getFileData(@QueryParam("filePath") String filePath, @QueryParam("isTotRowsToGet") String isTotRowsToGet, 
+    		@Context UriInfo ui) {
         return new DefaultApiBehavior<FileDataResponse>(ui) {
+        	private boolean isTotRowsToGetInner;
 
             @Override
             void before() throws FileNotFoundException, IOException {
                 fileMgr.checkFile(filePath);
+                
+				if(StringUtils.isEmpty(isTotRowsToGet)) {
+            		isTotRowsToGetInner = false;
+            	} else {
+            		isTotRowsToGetInner = Boolean.parseBoolean(isTotRowsToGet);
+            	}
             }
 
             @Override
-            FileDataResponse api() {
+            FileDataResponse api() throws IOException {
                 File file = new File(filePath);
-                return new FileDataResponse(file.getName(), file.isFile());
+                if(isTotRowsToGetInner) {
+                	Integer rowsInFile = null;
+                    rowsInFile = ReaderUtils.countLinesInFile(file);
+                    return new FileDataResponseComplete(file.getName(), file.isFile(), rowsInFile.toString());
+                } else {
+                	return new FileDataResponse(file.getName(), file.isFile());
+                }
             }
             
         }.call();
@@ -258,6 +274,8 @@ public class RestApi {
             private Integer maxRowsToReadInt;
             private boolean isTotRowsToGetInner;
             
+            private String ccPointer;
+            
             @Override
             FileContentResponse api() throws IOException {
                 return apiMgr.getTextFromPointer(file, pointerLong, maxRowsToReadInt, isTotRowsToGetInner);
@@ -269,12 +287,15 @@ public class RestApi {
 
                 if (StringUtils.isEmpty(pointer)) {
                 	pointerLong = 0;
+                	ccPointer = StringKeywords.ZERO;
                 } else {
                 	pointerLong = Long.parseLong(pointer);
+                	ccPointer = pointer.toString();
                 }
                 
                 if(pointerLong < 0) {
                 	pointerLong = 0;
+                	ccPointer = StringKeywords.ZERO;
                 }
                 
                 if(StringUtils.isEmpty(maxRowsToRead)) {
@@ -292,7 +313,7 @@ public class RestApi {
             
             @Override
             CacheControlMgr cacheControl() throws Exception {
-                return new CacheControlMgr(request, file, pointer);
+                return new CacheControlMgr(request, file, ccPointer);
             }
         }.call();
     }

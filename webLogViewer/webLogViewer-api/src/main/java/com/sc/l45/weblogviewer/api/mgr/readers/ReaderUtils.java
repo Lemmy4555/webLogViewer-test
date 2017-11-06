@@ -53,7 +53,7 @@ public class ReaderUtils {
 		return length;
 	}
 	
-	static int countLinesInFile(File file) throws IOException {
+	public static int countLinesInFile(File file) throws IOException {
    	 try(FileInputStream inputStream = new FileInputStream(file);
    			 InputStreamReader isr = new InputStreamReader(inputStream, FileConstants.ENCODING);
                 BufferedReader br = new BufferedReader(isr);) {

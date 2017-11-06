@@ -57,11 +57,15 @@ public class ApiBridgeMgr {
 			while(true) {
 				Integer totRowsRead = Integer.parseInt(response.rowsRead);
 				FileContentResponse responsePart;
-				if(maxRowsToReadInt != null) {
-					responsePart = testApi.getTailText(filePath, newPointer.toString(), String.valueOf(maxRowsToReadInt - totRowsRead), isTotRowsToGetNextCalls, FileContentResponse.class);
+				
+				String newMaxRowsToReadInt;
+				if(maxRowsToReadInt == null) {
+					newMaxRowsToReadInt = null;
 				} else {
-					responsePart = testApi.getTailText(filePath, newPointer.toString(), null, isTotRowsToGetNextCalls, FileContentResponse.class);
+					newMaxRowsToReadInt = String.valueOf(maxRowsToReadInt - totRowsRead);
 				}
+				
+				responsePart = testApi.getTailText(filePath, newPointer.toString(), newMaxRowsToReadInt, isTotRowsToGetNextCalls, FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Integer.parseInt(responsePart.currentPointer);;
 				concatFileReponseAtBeginning(response, responsePart);
@@ -118,11 +122,15 @@ public class ApiBridgeMgr {
 			while(true) {
 				Integer totRowsRead = Integer.parseInt(response.rowsRead);
 				FileContentResponse responsePart;
-				if(maxRowsToReadInt != null) {
-					responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), String.valueOf(maxRowsToReadInt - totRowsRead), isTotRowsToGetNextCalls, FileContentResponse.class);
+				
+				String newMaxRowsToReadInt;
+				if(maxRowsToReadInt == null) {
+					newMaxRowsToReadInt = null;
 				} else {
-					responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), null, isTotRowsToGetNextCalls, FileContentResponse.class);
+					newMaxRowsToReadInt = String.valueOf(maxRowsToReadInt - totRowsRead);
 				}
+				
+				responsePart = testApi.getTextFromPointer(filePath, newPointer.toString(), newMaxRowsToReadInt, isTotRowsToGetNextCalls, FileContentResponse.class);
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Long.parseLong(responsePart.currentPointer);
 				concatFileReponseAtTheEnd(response, responsePart);
@@ -177,10 +185,10 @@ public class ApiBridgeMgr {
 			return new FileContentBridgeResponse<T>(response, genericResponse.getStatus(), resETag);
 		}
 		
-		Integer totRowsRead = rowsRead;
-		
-		if(totRowsRead > 0) {
+		if(rowsRead > 0) {
 			while(true) {
+				Integer totRowsRead = Integer.parseInt(response.rowsRead);
+				
 				String newMaxRowsToReadInt;
 				if(maxRowsToReadInt == null) {
 					newMaxRowsToReadInt = null;
@@ -192,7 +200,6 @@ public class ApiBridgeMgr {
 				rowsRead = Integer.parseInt(responsePart.rowsRead);
 				newPointer = Integer.parseInt(responsePart.currentPointer);
 				concatFileReponseAtTheEnd(response, responsePart);
-				totRowsRead += rowsRead;
 				if(maxRowsToReadInt != null && totRowsRead.equals(maxRowsToReadInt)) {
 					break;
 				} else if(newPointer.equals(fileLength)) {
